@@ -42,7 +42,8 @@ int portNumber = 80;
 // Initialize the Ethernet client library
 // with the IP address and port of the server
 // that you want to connect to (port 80 is default for HTTP):
-WiFiClient client;
+WiFiClient wifi_client;
+HttpClient client = HttpClient(wifi_client, server, portNumber);
 
 void setup() {
   //Initialize serial and wait for port to open:
@@ -121,80 +122,53 @@ int client_readline(char *buf, int bufsize) {
   return count;
 }
 
-void line_parsevar(char *line, int line_len, char *buf, int buf_len, char *varname) {
+String line_getvar(String body, String varname) {
   int state = 0; // 0 = reading variable name, 1 = reading variable value
 
-  char current_varname[200];
-  int varname_counter = 0;
-  int buf_counter = 0;
+  String current_varname;
 
-  for (char i = 0; i < line_len; i++) {
+  String var_value;
+
+  for (int i = 0; i < body.length(); i++) {
     if (state == 0) {
-      if (line[i] != '=') {
-        current_varname[varname_counter] = line[i];
-        varname_counter++;
+      if (body[i] != '=') {
+        current_varname.concat(body[i]);
       } else {
-        current_varname[varname_counter] = '\0';
-        varname_counter = 0;
+        var_value = "";
         state = 1;
       }
     } else {
-      if (line[i] == '&' || i == line_len - 1) {
-        buf[buf_counter] = '\0';
-        buf_counter = 0;
-        state = 0;
-        if (strcmp(varname, current_varname)) {
-          printf("True\n");
-          return;
+      if (body[i] == '&' || i == body.length()) {
+        Serial.println("End of var");
+        if (varname == current_varname) {
+          Serial.println("True");
+          return var_value;
         }
+        current_varname = "";
+        var_value = "";
+        state = 0;
       } else {
-        buf[buf_counter] = line[i];
-        buf_counter++;
+        var_value.concat(body[i]);
       }
     }
+    Serial.print(current_varname);
+    Serial.print(" = ");
+    Serial.println(var_value);
   }
 }
 
 
 void loop() {
-  // if there are incoming bytes available
-  // from the server, read them and print them:
+  Serial.println("Get request");
+  client.get("/F392FC86D8D7/F392FC86D8D7");
 
-  // we need buffer
+  String response = client.responseBody();
+  Serial.println(response);
 
-  /* Things to do:
-   * HTTP Status = 200
-   * Get content length
-   * read [content length] bits from body
-   * parse body
-  */
+  String hi = line_getvar(response, "hi");
+  Serial.println(hi);
 
-
-  char buf[300];
-  char val[200];
-  int line_len = 0;
-
-  while (client.available()) {
-    // line_len = client_readline(buf, 300);
-    char c = client.read();
-    Serial.print(c);
-    
-  }
-  // line_parsevar(buf, line_len, val, 200, "hi");
-  // Serial.print(val);
-
-  Serial.print('\n');
-
-  // if the server's disconnected, stop the client:
-  if (!client.connected()) {
-    Serial.println();
-    Serial.println("disconnecting from server.");
-    client.stop();
-
-    // do nothing forevermore:
-    while (true)
-      ;  // TODO: reconnect
-  }
+  while (1);
 }
 
 
