@@ -25,6 +25,7 @@
 #include <SPI.h>
 #include <WiFiNINA.h>
 #include <ArduinoHttpClient.h>
+#include "EE31_motor_drive.h"
 
 #include "arduino_secrets.h"
 ///////please enter your sensitive data in the Secret tab/arduino_secrets.h
@@ -46,6 +47,9 @@ WiFiClient wifi_client;
 HttpClient client = HttpClient(wifi_client, server, portNumber);
 
 void setup() {
+  // Setup state machine
+  statemachine_setup();
+
   //Initialize serial and wait for port to open:
   Serial.begin(9600);
   while (!Serial) {
@@ -151,10 +155,9 @@ String line_getvar(String body, String varname) {
         var_value.concat(body[i]);
       }
     }
-    Serial.print(current_varname);
-    Serial.print(" = ");
-    Serial.println(var_value);
   }
+
+  return var_value;
 }
 
 
@@ -165,10 +168,13 @@ void loop() {
   String response = client.responseBody();
   Serial.println(response);
 
-  String hi = line_getvar(response, "hi");
-  Serial.println(hi);
+  String msg = line_getvar(response, "msg");
+  Serial.print("msg = ");
+  Serial.println(msg);
 
-  while (1);
+  statemachine_update(msg);
+
+  delay(1000);
 }
 
 
