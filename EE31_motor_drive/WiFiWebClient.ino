@@ -48,13 +48,14 @@ HttpClient client = HttpClient(wifi_client, server, portNumber);
 
 void setup() {
   // Setup state machine
-  statemachine_setup();
 
   //Initialize serial and wait for port to open:
   Serial.begin(9600);
   while (!Serial) {
     ;  // wait for serial port to connect. Needed for native USB port only
   }
+
+  statemachine_setup();
 
   // check for the WiFi module:
   if (WiFi.status() == WL_NO_MODULE) {
@@ -77,7 +78,7 @@ void setup() {
     status = WiFi.begin(ssid, pass);
 
     // wait 10 seconds for connection:
-    delay(10000);
+    delay(2000);
   }
   Serial.println("Connected to WiFi");
   printWifiStatus();

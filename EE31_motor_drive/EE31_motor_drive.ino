@@ -9,40 +9,41 @@ int state = 0; // State variable
 // Duty cycle is int from 0 - 1024
 void left_fwd(int duty) {
   Serial.println("left_fwd");
-  // digitalWrite(left_motorB, LOW);
-  // analogWrite(left_motorA, duty);
+  digitalWrite(left_motorB, LOW);
+  analogWrite(left_motorA, duty);
 }
 
 // Duty cycle is int from 0 - 1024
 void left_rev(int duty) {
   Serial.println("left_rev");
-  // digitalWrite(left_motorA, LOW);
-  // analogWrite(left_motorB, duty);
+  digitalWrite(left_motorA, LOW);
+  analogWrite(left_motorB, duty);
 
 }
 
 // Duty cycle is int from 0 - 1024
 void right_fwd(int duty) {
   Serial.println("right_fwd");
-  // digitalWrite(right_motorB, LOW);
-  // analogWrite(right_motorA, duty);
+  digitalWrite(right_motorB, LOW);
+  analogWrite(right_motorA, duty);
 
 }
 
 // Duty cycle is int from 0 - 1024
 void right_rev(int duty) {
   Serial.println("right_rev");
-  // digitalWrite(right_motorA, LOW);
-  // analogWrite(right_motorB, duty);
+  digitalWrite(right_motorA, LOW);
+  analogWrite(right_motorB, duty);
 
 }
 
 void statemachine_setup() {
   // put your setup code here, to run once:
-  // pinMode(left_motorA, OUTPUT);
-  // pinMode(right_motorA, OUTPUT);
-  // pinMode(left_motorB, OUTPUT);
-  // pinMode(right_motorB, OUTPUT);
+  // Serial.println("Setting up state machine...");
+  pinMode(left_motorA, OUTPUT);
+  pinMode(right_motorA, OUTPUT);
+  pinMode(left_motorB, OUTPUT);
+  pinMode(right_motorB, OUTPUT);
 
 }
 
