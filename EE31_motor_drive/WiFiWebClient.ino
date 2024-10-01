@@ -86,46 +86,6 @@ void setup() {
   // if you get a connection, report back via serial:
 }
 
-void get_command() {
-  if (client.connect(server, portNumber)) {
-    Serial.println("connected to server");
-    // Make a HTTP request:
-    format_get(HTTP_UUID, HTTP_UUID);
-    client.println("Host: ee31.eecs.tufts.edu");
-
-    client.println("Connection: close");
-
-    client.println();
-
-    delay(1000);
-    loop();
-  } else {
-    Serial.println("not connected");
-  }
-}
-
-void format_get(char source[], char dest[]) {
-  client.print("GET /");
-  client.print(source);
-  client.print("/");
-  client.print(dest);
-  client.println(" HTTP/1.1");
-}
-
-int client_readline(char *buf, int bufsize) {
-  int count = 0;
-  char c = client.read();
-
-  while (client.available() > 0 && c != '\n') {
-    buf[count] = c;
-    c = client.read();
-    count++;
-  }
-  buf[count] = '\0';
-
-  return count;
-}
-
 String line_getvar(String body, String varname) {
   int state = 0; // 0 = reading variable name, 1 = reading variable value
 
@@ -163,7 +123,11 @@ String line_getvar(String body, String varname) {
 
 void loop() {
   Serial.println("Get request");
-  client.get("/F392FC86D8D7/F392FC86D8D7");
+  String url = "/";
+  url.concat(HTTP_UUID);
+  url.concat("/");
+  url.concat(DEST_UUID);
+  client.get(url);
 
   String response = client.responseBody();
   Serial.println(response);
