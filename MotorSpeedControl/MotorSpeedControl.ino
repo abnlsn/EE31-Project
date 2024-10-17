@@ -1,28 +1,33 @@
 #include "EE31_motor_drive.h"
 
 int left_motor_encoder = 3;
+int right_motor_encoder = 4;
+
+int last_millis = 0;
+
+int left_count = 0;
+int right_count = 0;
+int left_duty = 255;
+int right_duty = 255;
+float sum = 0;
+
+const int NUM_ROTATIONS = 50;
 
 void setup() {
   statemachine_setup();
   Serial.begin(9600);
   pinMode(left_motor_encoder, INPUT);
+  pinMode(right_motor_encoder, INPUT);
 
   Serial.println("Duty Cycle,ms per rev");
 
-  attachInterrupt(digitalPinToInterrupt(left_motor_encoder), rotation, RISING);
+  attachInterrupt(digitalPinToInterrupt(left_motor_encoder), rotation_left, RISING);
+  attachInterrupt(digitalPinToInterrupt(right_motor_encoder), rotation_right, RISING);
+  left_fwd(left_duty);
+  right_fwd(right_duty);
 }
 
-
-
-int last_millis = 0;
-
-int count = 0;
-int current_duty = 20;
-float sum = 0;
-
-const int NUM_ROTATIONS = 50;
-
-void rotation() {
+void rotation_left() {
   int current = millis();
   int diff_time = current - last_millis;
 
@@ -35,29 +40,35 @@ void rotation() {
 
   sum += diff_time;
 
-  count++;
-  if (count > NUM_ROTATIONS) {
-    count = 0;
-    sum = sum / NUM_ROTATIONS;
-    Serial.print(current_duty);
-    Serial.print(",");
-    Serial.print(sum);
-    Serial.println(",");
+  left_count++;
+}
 
-    // reset
-    sum = 0;
-    current_duty += 5;
-    left_fwd(current_duty);
-  }
+void rotation_right() {
+  right_count++;
 }
 
 void loop() {
-  if (current_duty > 255) {
-    detachInterrupt(digitalPinToInterrupt(left_motor_encoder));
-    Serial.println("Deactivated");
-    left_fwd(0);
-    while (true);
-  }
   delay(100);
+  
+
+  int difference = left_count - right_count;
+
+  Serial.print(difference);
+  Serial.print(" ");
+  Serial.print(left_count);
+  Serial.print(" ");
+  Serial.println(right_count);
+
+  if (difference > 100) {
+    // slow down left
+    left_fwd(150);
+    right_fwd(255);
+    Serial.println("Slow left");
+  } else if (difference < -100) {
+    // slow down right
+    right_fwd(100);
+    left_fwd(255);
+    Serial.println("Slow right");
+  }
 }
 
