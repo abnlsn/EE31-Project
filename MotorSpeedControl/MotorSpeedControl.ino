@@ -1,4 +1,5 @@
 #include "EE31_motor_drive.h"
+#include "motor_calibration.h"
 
 int left_motor_encoder = 3;
 int right_motor_encoder = 4;
@@ -23,8 +24,8 @@ void setup() {
 
   attachInterrupt(digitalPinToInterrupt(left_motor_encoder), rotation_left, RISING);
   attachInterrupt(digitalPinToInterrupt(right_motor_encoder), rotation_right, RISING);
-  left_fwd(left_duty);
-  right_fwd(right_duty);
+  left_fwd(left_duty + LEFT_DUTY_OFFSET);
+  right_fwd(right_duty + RIGHT_DUTY_OFFSET);
 }
 
 void rotation_left() {
@@ -59,16 +60,19 @@ void loop() {
   Serial.print(" ");
   Serial.println(right_count);
 
-  if (difference > 100) {
+  if (difference > 10) {
     // slow down left
-    left_fwd(150);
-    right_fwd(255);
+    left_fwd(200 + LEFT_DUTY_OFFSET);
+    right_fwd(255 + RIGHT_DUTY_OFFSET);
     Serial.println("Slow left");
-  } else if (difference < -100) {
+  } else if (difference < -10) {
     // slow down right
-    right_fwd(100);
-    left_fwd(255);
+    right_fwd(200 + RIGHT_DUTY_OFFSET);
+    left_fwd(255 + LEFT_DUTY_OFFSET);
     Serial.println("Slow right");
+  } else {
+    right_fwd(255 + RIGHT_DUTY_OFFSET);
+    left_fwd(255 + LEFT_DUTY_OFFSET);
   }
 }
 
