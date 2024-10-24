@@ -22,16 +22,16 @@ void statemachine_update(String msg) {
   
   if(state == 0) {
     // stop
-    right_fwd(0);
-    left_fwd(0);
+    motorspeed_set_direction(0);
+    motorspeed_set_offset(0);
   } else if(state == 1) {
     // fwd
-    right_fwd(1024);
-    left_fwd(1024);
+    motorspeed_set_direction(1);
+    motorspeed_set_offset(0);
   } else if(state == 2) {
     // reverse
-    right_rev(1024);
-    left_rev(1024);
+    motorspeed_set_direction(-1);
+    motorspeed_set_offset(0);
   } else if(state == 3) {
     // circle right
     right_rev(1024);

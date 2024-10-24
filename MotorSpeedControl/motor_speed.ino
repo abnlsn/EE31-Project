@@ -70,12 +70,12 @@ void motorspeed_loop() {
     Serial.println("Slow left");
   } else if (difference < (-THRESHOLD + offset)) {
     // slow down right
-    right_duty = 200 + LEFT_DUTY_OFFSET;
-    left_duty = 255 + RIGHT_DUTY_OFFSET;
+    right_duty = 200 + RIGHT_DUTY_OFFSET;
+    left_duty = 255 + LEFT_DUTY_OFFSET;
     Serial.println("Slow right");
   } else {
-    right_duty = 255 + LEFT_DUTY_OFFSET;
-    left_duty = 255 + RIGHT_DUTY_OFFSET;
+    right_duty = 255 + RIGHT_DUTY_OFFSET;
+    left_duty = 255 + LEFT_DUTY_OFFSET;
   }
 
   if (direction > 0) {

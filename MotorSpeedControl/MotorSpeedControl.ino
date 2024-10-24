@@ -7,4 +7,10 @@ void setup() {
 
 void loop() {
   motorspeed_loop();
+
+  String msg = Serial.readString();
+  msg.trim();
+  Serial.println(msg);
+
+  statemachine_update(msg);
 }
