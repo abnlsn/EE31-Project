@@ -4,8 +4,8 @@
 void motorspeed_setup();
 void motorspeed_loop();
 
-void motorspeed_fwd();
-void motorspeed_reverse();
+void motorspeed_set_direction(int new_direction);
+void motorspeed_set_offset(int new_offset);
 
 void left_fwd(int duty);
 void right_fwd(int duty);

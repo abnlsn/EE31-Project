@@ -26,10 +26,12 @@ void statemachine_update(String msg) {
     left_fwd(0);
   } else if(state == 1) {
     // fwd
-    motorspeed_fwd();
+    right_fwd(1024);
+    left_fwd(1024);
   } else if(state == 2) {
     // reverse
-    motorspeed_rev();
+    right_rev(1024);
+    left_rev(1024);
   } else if(state == 3) {
     // circle right
     right_rev(1024);

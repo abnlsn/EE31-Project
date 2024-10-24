@@ -13,6 +13,9 @@ int left_duty = 255;
 int right_duty = 255;
 float sum = 0;
 
+int offset = 0;
+int direction = 0;
+
 const int NUM_ROTATIONS = 50;
 
 void motorspeed_setup() {
@@ -60,28 +63,42 @@ void motorspeed_loop() {
   Serial.print(" ");
   Serial.println(right_count);
 
-  if (difference > 10) {
+  if (difference > (THRESHOLD + offset)) {
     // slow down left
-    left_fwd(200 + LEFT_DUTY_OFFSET);
-    right_fwd(255 + RIGHT_DUTY_OFFSET);
+    left_duty = 200 + LEFT_DUTY_OFFSET;
+    right_duty = 255 + RIGHT_DUTY_OFFSET;
     Serial.println("Slow left");
-  } else if (difference < -10) {
+  } else if (difference < (-THRESHOLD + offset)) {
     // slow down right
-    right_fwd(200 + RIGHT_DUTY_OFFSET);
-    left_fwd(255 + LEFT_DUTY_OFFSET);
+    right_duty = 200 + LEFT_DUTY_OFFSET;
+    left_duty = 255 + RIGHT_DUTY_OFFSET;
     Serial.println("Slow right");
   } else {
-    right_fwd(255 + RIGHT_DUTY_OFFSET);
-    left_fwd(255 + LEFT_DUTY_OFFSET);
+    right_duty = 255 + LEFT_DUTY_OFFSET;
+    left_duty = 255 + RIGHT_DUTY_OFFSET;
+  }
+
+  if (direction > 0) {
+    right_fwd(right_duty);
+    left_fwd(left_duty);
+  } else if (direction < 0) {
+    right_rev(right_duty);
+    left_rev(left_duty);
+  } else {
+    right_fwd(0);
+    left_fwd(0);
   }
 }
 
-void motorspeed_fwd() {
-
+// offset < 0 => go left
+// offset > 0 => go right
+void motorspeed_set_offset(int new_offset) {
+  offset = new_offset;
 }
 
-void motorspeed_rev() {
-
+// 0 = off, <0 backwards, >0 forwards
+void motorspeed_set_direction(int new_direction) {
+  direction = new_direction;
 }
 
 void left_fwd(int duty) {
