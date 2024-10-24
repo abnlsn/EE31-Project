@@ -1,45 +1,6 @@
+#include "motor_speed.h"
 
 int state = 0; // State variable
-
-// Duty cycle is int from 0 - 1024
-void left_fwd(int duty) {
-  digitalWrite(left_motorB, LOW);
-  analogWrite(left_motorA, duty);
-}
-
-// Duty cycle is int from 0 - 1024
-void left_rev(int duty) {
-  Serial.println("left_rev");
-  digitalWrite(left_motorA, LOW);
-  analogWrite(left_motorB, duty);
-
-}
-
-// Duty cycle is int from 0 - 1024
-void right_fwd(int duty) {
-  Serial.println("right_fwd");
-  digitalWrite(right_motorB, LOW);
-  analogWrite(right_motorA, duty);
-
-}
-
-// Duty cycle is int from 0 - 1024
-void right_rev(int duty) {
-  Serial.println("right_rev");
-  digitalWrite(right_motorA, LOW);
-  analogWrite(right_motorB, duty);
-
-}
-
-void statemachine_setup() {
-  // put your setup code here, to run once:
-  // Serial.println("Setting up state machine...");
-  pinMode(left_motorA, OUTPUT);
-  pinMode(right_motorA, OUTPUT);
-  pinMode(left_motorB, OUTPUT);
-  pinMode(right_motorB, OUTPUT);
-
-}
 
 void statemachine_update(String msg) {
 
@@ -60,24 +21,29 @@ void statemachine_update(String msg) {
   }
   
   if(state == 0) {
+    // stop
     right_fwd(0);
     left_fwd(0);
   } else if(state == 1) {
-    right_fwd(1024);
-    left_fwd(1024);
+    // fwd
+    motorspeed_fwd();
   } else if(state == 2) {
-    right_rev(1024);
-    left_rev(1024);
+    // reverse
+    motorspeed_rev();
   } else if(state == 3) {
+    // circle right
     right_rev(1024);
     left_fwd(1024);
   } else if(state == 4) {
+    // circle left
     right_fwd(1024);
     left_rev(1024);
   } else if(state == 5) {
+    // turn right
     right_fwd(0);
     left_fwd(1024);
   } else if(state == 6) {
+    // turn left
     right_fwd(1024);
     left_fwd(0);
   } 

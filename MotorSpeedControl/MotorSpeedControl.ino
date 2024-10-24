@@ -1,78 +1,10 @@
-#include "EE31_motor_drive.h"
-#include "motor_calibration.h"
-
-int left_motor_encoder = 3;
-int right_motor_encoder = 4;
-
-int last_millis = 0;
-
-int left_count = 0;
-int right_count = 0;
-int left_duty = 255;
-int right_duty = 255;
-float sum = 0;
-
-const int NUM_ROTATIONS = 50;
+#include "motor_speed.h"
 
 void setup() {
-  statemachine_setup();
   Serial.begin(9600);
-  pinMode(left_motor_encoder, INPUT);
-  pinMode(right_motor_encoder, INPUT);
-
-  Serial.println("Duty Cycle,ms per rev");
-
-  attachInterrupt(digitalPinToInterrupt(left_motor_encoder), rotation_left, RISING);
-  attachInterrupt(digitalPinToInterrupt(right_motor_encoder), rotation_right, RISING);
-  left_fwd(left_duty + LEFT_DUTY_OFFSET);
-  right_fwd(right_duty + RIGHT_DUTY_OFFSET);
-}
-
-void rotation_left() {
-  int current = millis();
-  int diff_time = current - last_millis;
-
-  last_millis = current;
-
-  if (last_millis == 0) return;
-
-  float mps = 0.5 * 3.1415 / diff_time;
-  // Serial.println(mps);
-
-  sum += diff_time;
-
-  left_count++;
-}
-
-void rotation_right() {
-  right_count++;
+  motorspeed_setup();
 }
 
 void loop() {
-  delay(100);
-  
-
-  int difference = left_count - right_count;
-
-  Serial.print(difference);
-  Serial.print(" ");
-  Serial.print(left_count);
-  Serial.print(" ");
-  Serial.println(right_count);
-
-  if (difference > 10) {
-    // slow down left
-    left_fwd(200 + LEFT_DUTY_OFFSET);
-    right_fwd(255 + RIGHT_DUTY_OFFSET);
-    Serial.println("Slow left");
-  } else if (difference < -10) {
-    // slow down right
-    right_fwd(200 + RIGHT_DUTY_OFFSET);
-    left_fwd(255 + LEFT_DUTY_OFFSET);
-    Serial.println("Slow right");
-  } else {
-    right_fwd(255 + RIGHT_DUTY_OFFSET);
-    left_fwd(255 + LEFT_DUTY_OFFSET);
-  }
+  motorspeed_loop();
 }
-
