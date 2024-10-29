@@ -2,8 +2,8 @@ const int left_motor_encoder = 3;
 const int right_motor_encoder = 4;
 const int left_motorA = 5;
 const int left_motorB = 6;
-const int right_motorA = 7;
-const int right_motorB = 8;
+const int right_motorA = 9;
+const int right_motorB = 10;
 
 int last_millis = 0;
 
