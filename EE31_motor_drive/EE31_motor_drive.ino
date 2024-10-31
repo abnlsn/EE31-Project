@@ -1,8 +1,8 @@
 
 int left_motorA = 5;
 int left_motorB = 6;
-int right_motorA = 7;
-int right_motorB = 8;
+int right_motorA = 9;
+int right_motorB = 10;
 
 int state = 0; // State variable
 
