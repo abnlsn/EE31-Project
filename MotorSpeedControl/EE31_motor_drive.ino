@@ -26,10 +26,12 @@ void statemachine_update(String msg) {
     motorspeed_set_offset(0);
   } else if(state == 1) {
     // fwd
+    stop_momentarily();
     motorspeed_set_direction(1);
     motorspeed_set_offset(0);
   } else if(state == 2) {
     // reverse
+    stop_momentarily();
     motorspeed_set_direction(-1);
     motorspeed_set_offset(0);
   } else if(state == 3) {
@@ -53,4 +55,8 @@ void statemachine_update(String msg) {
 
 }
 
-
+void stop_momentarily() {
+  right_fwd(0);
+  left_fwd(0);
+  delay(10);
+}
