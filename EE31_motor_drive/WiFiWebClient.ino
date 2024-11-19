@@ -37,14 +37,16 @@ int status = WL_IDLE_STATUS;
 // if you don't want to use DNS (and reduce your sketch size)
 // use the numeric IP instead of the name for the server:
 //IPAddress server(74,125,232,128);  // numeric IP for Google (no DNS)
-char server[] = "ee31.eecs.tufts.edu";  // name address for Google (using DNS)
+char server[] = "34.28.153.91";  // name address for Google (using DNS)
 int portNumber = 80;
 
 // Initialize the Ethernet client library
 // with the IP address and port of the server
 // that you want to connect to (port 80 is default for HTTP):
 WiFiClient wifi_client;
-HttpClient client = HttpClient(wifi_client, server, portNumber);
+WebSocketClient client = WebSocketClient(wifi_client, server, portNumber);
+
+int count = 0;
 
 void setup() {
   // Setup state machine
@@ -87,7 +89,7 @@ void setup() {
   // if you get a connection, report back via serial:
 }
 
-String line_getvar(String body, String varname) {
+String line_getvar(String body) {
   int state = 0; // 0 = reading variable name, 1 = reading variable value
 
   String current_varname;
@@ -96,19 +98,17 @@ String line_getvar(String body, String varname) {
 
   for (int i = 0; i < body.length(); i++) {
     if (state == 0) {
-      if (body[i] != '=') {
+      if (body[i] != '.') {
         current_varname.concat(body[i]);
       } else {
-        var_value = "";
+        if (current_varname != WEB_UUID) {
+          return "";
+        }
         state = 1;
       }
     } else {
-      if (body[i] == '&' || i == body.length()) {
+      if (i == body.length()) {
         Serial.println("End of var");
-        if (varname == current_varname) {
-          Serial.println("True");
-          return var_value;
-        }
         current_varname = "";
         var_value = "";
         state = 0;
@@ -117,29 +117,33 @@ String line_getvar(String body, String varname) {
       }
     }
   }
-
   return var_value;
 }
 
 
 void loop() {
-  Serial.println("Get request");
-  String url = "/";
-  url.concat(HTTP_UUID);
-  url.concat("/");
-  url.concat(DEST_UUID);
-  client.get(url);
+  client.begin();
+  client.beginMessage(TYPE_TEXT);
+  client.print(HTTP_UUID);
+  client.endMessage();
 
-  String response = client.responseBody();
-  Serial.println(response);
+  while (client.connected()) {
+    if (count > 6000) {
+      count = 0;
+    }
 
-  String msg = line_getvar(response, "msg");
-  Serial.print("msg = ");
-  Serial.println(msg);
+    // check if a message is available to be received
+    int messageSize = client.parseMessage();
+    if (messageSize > 0) {
+      Serial.println("Received a message:");
+      String response = client.readString();
+      String msg = line_getvar(response);
+      Serial.println(msg);
+    }
 
-  statemachine_update(msg);
-
-  delay(1000);
+    // wait 10ms
+    delay(10);
+  }
 }
 
 
