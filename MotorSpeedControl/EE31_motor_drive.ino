@@ -1,58 +1,41 @@
 #include "motor_speed.h"
+#include "sensing.h"
 
-int state = 0; // State variable
+enum State {
+  START,
+  FIND_WALL,
+  TURN_TO_RED,
+  FIND_RED,
+  FOLLOW_RED,
+  FIND_YELLOW,
+  FOLLOW_YELLOW,
+  TURN_TO_START,
+  FIND_START
+};
+
+enum State state = START; // State variable
 
 void statemachine_update(String msg) {
-
-  if(msg == "0") {
-    state = 0;
-  } else if(msg == "1") {
-    state = 1;
-  } else if(msg == "2") {
-    state = 2;
-  } else if(msg == "3") {
-    state = 3;
-  } else if(msg == "4") {
-    state = 4;
-  } else if(msg == "5") {
-    state = 5;
-  } else if(msg == "6") {
-    state = 6;
+  if (msg == "start") {
+    state = FIND_WALL;
   }
-  
-  if(state == 0) {
-    // stop
-    motorspeed_set_direction(0);
-    motorspeed_set_offset(0);
-  } else if(state == 1) {
-    // fwd
-    stop_momentarily();
-    motorspeed_set_direction(1);
-    motorspeed_set_offset(0);
-  } else if(state == 2) {
-    // reverse
-    stop_momentarily();
-    motorspeed_set_direction(-1);
-    motorspeed_set_offset(0);
-  } else if(state == 3) {
-    // circle right
-    right_rev(1024);
-    left_fwd(1024);
-  } else if(state == 4) {
-    // circle left
-    right_fwd(1024);
-    left_rev(1024);
-  } else if(state == 5) {
-    // turn right
-    right_fwd(0);
-    left_fwd(1024);
-  } else if(state == 6) {
-    // turn left
-    right_fwd(1024);
-    left_fwd(0);
-  } 
-  
+}
 
+void statemachine_run() {
+  Serial.println(state);
+  if (state == START) {
+    // do nothing, relies on message from user to continue
+
+  } else if (state == FIND_WALL) {
+    // stay in state until wall is detected
+    Serial.println(sensing_readIRValue());
+    if (sensing_readIRValue() > 625) {
+      state = TURN_TO_RED;
+    }
+
+  } else if (state == TURN_TO_RED) {
+    // stay in state until desired degrees of rotation is reached
+  }
 }
 
 void stop_momentarily() {
