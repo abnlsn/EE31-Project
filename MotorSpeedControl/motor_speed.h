@@ -1,4 +1,4 @@
-#include "EE31_motor_drive.h"
+#include "state_machine.h"
 #include "motor_calibration.h"
 
 void motorspeed_setup();
