@@ -2,9 +2,9 @@
 * Authors: Abe Nelson, Eric M. Rohloff
 * Date: 11/21/2024
 * 
-* State Machine for mobile bot that line follows, wall senses, and communicates
-* with a server. Below is state logic that accounts for the demonstration
-* required for the final presentation.
+* Function definitions for State Machine for mobile bot that line follows, 
+* wall senses, and communicates with a server. Below is state logic that 
+* accounts for the demonstration required for the final presentation.
 */
 #include "motor_speed.h"
 #include "sensing.h"
@@ -74,12 +74,3 @@ void statemachine_run() {
   }
 }
 
-/* 
-*  Function to keep the motors from getting damaged from moving forward then 
-*  backwards to quickly. 
-*/
-void stop_momentarily() {
-  right_fwd(0);
-  left_fwd(0);
-  delay(10);
-}

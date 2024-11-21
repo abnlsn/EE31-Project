@@ -1,3 +1,13 @@
+/*
+* Authors: Abe Nelson, Eric M. Rohloff
+* Date: 11/21/2024
+* 
+* Motor Control functionality, function definitions for moving the robot,
+* turning the robot, reversing, in addition to managing the speed to make both
+* motors move at equal speeds. 
+*/
+
+// Pin Numbers for Arduino Connections
 const int left_motor_encoder = 3;
 const int right_motor_encoder = 4;
 const int left_motorA = 5;
@@ -5,18 +15,28 @@ const int left_motorB = 6;
 const int right_motorA = 9;
 const int right_motorB = 10;
 
-int last_millis = 0;
-
+// Motor Speed Control Variables
 int left_count = 0;
 int right_count = 0;
 int left_duty = 255;
 int right_duty = 255;
-float sum = 0;
 
 int offset = 0;
-int direction = 0;
+int direction_right = 0; // positive = forward, negative = backwards
+int direction_left = 0;
+
+int rotate_amount = 0; // positive = right, negative = left
 
 const int NUM_ROTATIONS = 50;
+
+// State Definitions for Driving and Rotating
+typedef enum {
+  IDLE,
+  DRIVE,
+  ROTATE,
+} SpeedState;
+
+SpeedState motorspeed_state = DRIVE;
 
 void motorspeed_setup() {
   pinMode(left_motor_encoder, INPUT);
@@ -32,18 +52,6 @@ void motorspeed_setup() {
 }
 
 void rotation_left() {
-  int current = millis();
-  int diff_time = current - last_millis;
-
-  last_millis = current;
-
-  if (last_millis == 0) return;
-
-  float mps = 0.5 * 3.1415 / diff_time;
-  // Serial.println(mps);
-
-  sum += diff_time;
-
   left_count++;
 }
 
@@ -51,10 +59,7 @@ void rotation_right() {
   right_count++;
 }
 
-void motorspeed_loop() {
-  delay(100);
-  
-
+void motor_drive_loop() {
   int difference = left_count - right_count;
 
   Serial.print(difference);
@@ -78,13 +83,80 @@ void motorspeed_loop() {
     left_duty = 255 + LEFT_DUTY_OFFSET;
   }
 
-  if (direction > 0) {
-    right_fwd(right_duty);
-    left_fwd(left_duty);
-  } else if (direction < 0) {
-    right_rev(right_duty);
+  if (direction_left < 0) {
     left_rev(left_duty);
+  } else if (direction_left > 0) {
+    left_fwd(left_duty);
   } else {
+    left_fwd(0);
+  }
+  
+  if (direction_right < 0) {
+    right_rev(right_duty);
+  } else if (direction_right > 0) {
+    right_fwd(right_duty);
+  } else {
+    right_fwd(0);
+  }
+
+}
+
+void motor_rotate_loop() {
+  if (rotate_amount > 0) { // turn right
+    left_fwd(left_duty);
+    right_rev(right_duty);
+
+  } else if (rotate_amount < 0) { // turn left
+    left_rev(left_duty);
+    right_fwd(right_duty);
+
+  } else {
+    motorspeed_state = IDLE;
+  }
+
+  if (right_count > rotate_amount) {
+    right_fwd(0);
+  }
+  if (left_count > rotate_amount) {
+    left_fwd(0);
+  }
+
+  if (right_count > rotate_amount && left_count > rotate_amount) {
+    rotate_amount = 0;
+  }
+}
+
+bool rotate_done() {
+  return rotate_amount == 0;
+}
+
+void motorspeed_rotate(int amount) {
+  rotate_amount = amount;
+  if (rotate_amount > 0) {
+    direction_left = 1;
+    direction_right = -1;
+  } else {
+    direction_left = -1;
+    direction_right = 1;
+  }
+  motorspeed_state = ROTATE;
+  left_count = 0;
+  right_count = 0;
+}
+
+void motorspeed_loop() {
+  delay(100);
+  Serial.println(motorspeed_state);
+
+  if (motorspeed_state == DRIVE) {
+    motor_drive_loop();
+  } else if (motorspeed_state == ROTATE) {
+    motor_drive_loop();
+    if (left_count > rotate_amount && right_count > rotate_amount) {
+      motorspeed_state = IDLE;
+    }
+  } else {
+    // IDLE
     right_fwd(0);
     left_fwd(0);
   }
@@ -98,7 +170,13 @@ void motorspeed_set_offset(int new_offset) {
 
 // 0 = off, <0 backwards, >0 forwards
 void motorspeed_set_direction(int new_direction) {
-  direction = new_direction;
+  if (new_direction == 0) {
+    motorspeed_state = IDLE;
+  } else {
+    motorspeed_state = DRIVE;
+    direction_left = new_direction;
+    direction_right = new_direction;
+  }
 }
 
 void left_fwd(int duty) {
@@ -123,3 +201,19 @@ void right_rev(int duty) {
   analogWrite(right_motorB, duty);
 
 }
+
+/* 
+*  TODO: use this within the implementation above
+*  Function to keep the motors from getting damaged from moving forward then 
+*  backwards to quickly. 
+*/
+void stop_momentarily() {
+  right_fwd(0);
+  left_fwd(0);
+  delay(10);
+}
+
+
+
+
+// LOVE SOSA

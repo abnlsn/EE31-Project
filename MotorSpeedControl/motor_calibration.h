@@ -1,3 +1,3 @@
-#define RIGHT_DUTY_OFFSET -65
+#define RIGHT_DUTY_OFFSET -60
 #define LEFT_DUTY_OFFSET -5
 #define THRESHOLD 10
