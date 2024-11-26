@@ -1,6 +1,10 @@
 #include "motor_speed.h"
 #include "sensing.h"
 
+#ifndef MOTOR_SPEED_H
+#define MOTOR_SPEED_H
+
+
 void setup() {
   Serial.begin(9600);
   motorspeed_setup();
@@ -24,3 +28,5 @@ void loop() {
 
   // statemachine_run();
 }
+
+#endif

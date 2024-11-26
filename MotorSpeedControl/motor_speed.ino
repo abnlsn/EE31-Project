@@ -7,6 +7,9 @@
 * motors move at equal speeds. 
 */
 
+#include "motor_speed.h"
+#include "sensing.h"
+
 // Pin Numbers for Arduino Connections
 const int left_motor_encoder = 3;
 const int right_motor_encoder = 4;
@@ -29,11 +32,17 @@ int rotate_amount = 0; // positive = right, negative = left
 
 const int NUM_ROTATIONS = 50;
 
+#define COLOR_GREATERTHAN(a, b) ((a.red > b.red) && (a.green > b.green) && (a.blue > b.blue))
+Color colorThreshold;
+int colorLeftCount = 0;
+int colorRightCount = 0;
+
 // State Definitions for Driving and Rotating
 typedef enum {
   IDLE,
   DRIVE,
   ROTATE,
+  FOLLOW_COLOR
 } SpeedState;
 
 SpeedState motorspeed_state = DRIVE;
@@ -155,6 +164,10 @@ void motorspeed_loop() {
     if (left_count > rotate_amount && right_count > rotate_amount) {
       motorspeed_state = IDLE;
     }
+  }
+  else if (motorspeed_state == FOLLOW_COLOR) {
+    linefollow_loop();
+    motor_drive_loop();
   } else {
     // IDLE
     right_fwd(0);
@@ -177,6 +190,38 @@ void motorspeed_set_direction(int new_direction) {
     direction_left = new_direction;
     direction_right = new_direction;
   }
+}
+
+void linefollow_loop() {
+  Color left_color = sensing_readLeftColor();
+  Color right_color = sensing_readRightColor();
+
+  if (COLOR_GREATERTHAN(left_color, colorThreshold) && COLOR_GREATERTHAN(right_color, colorThreshold)) {
+    // We are on track
+    colorLeftCount = 0;
+    colorRightCount = 0;
+  } else if (COLOR_GREATERTHAN(left_color, colorThreshold)) {
+    // We are too far right
+    colorRightCount++;
+  } else if (COLOR_GREATERTHAN(right_color, colorThreshold)) {
+    // We are too far left
+    colorLeftCount++;
+  } else {
+    // We are off track, rely on the previous counts to correct
+  }
+
+  if (colorLeftCount != 0) {
+    motorspeed_set_offset(-10 * colorLeftCount);
+  } else if (colorRightCount != 0) {
+    motorspeed_set_offset(10 * colorRightCount);
+  } else {
+    motorspeed_set_offset(0);
+  }
+}
+
+void follow_color(Color threshold) {
+  colorThreshold = threshold;
+  motorspeed_state = FOLLOW_COLOR; 
 }
 
 void left_fwd(int duty) {
@@ -212,8 +257,3 @@ void stop_momentarily() {
   left_fwd(0);
   delay(10);
 }
-
-
-
-
-// LOVE SOSA

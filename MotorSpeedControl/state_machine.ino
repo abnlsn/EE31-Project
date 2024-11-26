@@ -53,6 +53,8 @@ void statemachine_run() {
 
   } else if (state == TURN_TO_RED) {
     // stay in state until desired degrees of rotation is reached
+    Color left_color = sensing_readLeftColor();
+    Color right_color = sensing_readRightColor();
 
   } else if (state == FIND_RED) {
     // stay in state until red is detected
