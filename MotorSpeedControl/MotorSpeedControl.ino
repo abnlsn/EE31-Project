@@ -11,7 +11,7 @@ void setup() {
   sensing_setup();
 
   delay(100);
-  motorspeed_rotate(5000);
+  motorspeed_rotate(DEGREES_90);
   // motorspeed_set_direction(1);
 }
 
