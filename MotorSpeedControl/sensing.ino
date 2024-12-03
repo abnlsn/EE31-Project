@@ -18,12 +18,15 @@ const int greenLed;
 const int blueLed;
 
 Color leftColor = {0, 0, 0};
+int leftAmbient = 0;
 bool leftReady = false;
 Color rightColor = {0, 0, 0};
+int rightAmbient = 0;
 bool rightReady = false;
 
 typedef enum {
     color_IDLE,
+    color_READING_AMBIENT,
     color_READING_RED,
     color_READING_GREEN,
     color_READING_BLUE
@@ -54,14 +57,24 @@ void sensing_loop() {
         digitalWrite(redLed, LOW);
         digitalWrite(greenLed, LOW);
         digitalWrite(blueLed, LOW);
+    
+    } else if (colorState == color_READING_AMBIENT) {
+        digitalWrite(redLed, LOW);
+        digitalWrite(greenLed, LOW);
+        digitalWrite(blueLed, LOW);
+
+        leftAmbient = analogRead(leftColorSensor);
+        rightAmbient = analogRead(rightColorSensor);
+
+        colorState = color_READING_RED;
 
     } else if (colorState == color_READING_RED) {
         digitalWrite(redLed, HIGH);
         digitalWrite(greenLed, LOW);
         digitalWrite(blueLed, LOW);
 
-        leftColor.red = analogRead(leftColorSensor);
-        rightColor.red = analogRead(rightColorSensor);
+        leftColor.red = analogRead(leftColorSensor) - leftAmbient;
+        rightColor.red = analogRead(rightColorSensor) - rightAmbient;
         
         colorState = color_READING_GREEN;
     } else if (colorState == color_READING_GREEN) {
@@ -69,8 +82,8 @@ void sensing_loop() {
         digitalWrite(greenLed, HIGH);
         digitalWrite(blueLed, LOW);
 
-        leftColor.green = analogRead(leftColorSensor);
-        rightColor.green = analogRead(rightColorSensor);
+        leftColor.green = analogRead(leftColorSensor) - leftAmbient;
+        rightColor.green = analogRead(rightColorSensor) - rightAmbient;
 
         colorState = color_READING_BLUE;
     } else if (colorState == color_READING_BLUE) {
@@ -78,8 +91,8 @@ void sensing_loop() {
         digitalWrite(greenLed, LOW);
         digitalWrite(blueLed, HIGH);
 
-        leftColor.blue = analogRead(leftColorSensor);
-        rightColor.blue = analogRead(rightColorSensor);
+        leftColor.blue = analogRead(leftColorSensor) - leftAmbient;
+        rightColor.blue = analogRead(rightColorSensor) - rightAmbient;
         
         colorState = color_IDLE;
     }
@@ -101,7 +114,7 @@ bool sensing_colorReady() {
  * Start reading values for each color
 */
 void sensing_readColors() {
-    colorState = color_READING_RED;
+    colorState = color_READING_AMBIENT;
 }
 
 /*
