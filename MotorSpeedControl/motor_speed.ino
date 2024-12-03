@@ -193,6 +193,9 @@ void motorspeed_set_direction(int new_direction) {
 }
 
 void linefollow_loop() {
+  sensing_loop();
+  if (!sensing_colorReady()) return; // line following colors are not ready, try again next loop
+
   Color left_color = sensing_readLeftColor();
   Color right_color = sensing_readRightColor();
 
