@@ -7,7 +7,8 @@
 * accounts for the demonstration required for the final presentation.
 */
 
-
+// Updates State Machine
 void statemachine_update(String msg);
 
+// Runs the state machine in conjunction with the server
 void statemachine_run();

@@ -17,6 +17,8 @@ const int redLed;
 const int greenLed;
 const int blueLed;
 
+
+// Variable Definitions
 Color leftColor = {0, 0, 0};
 int leftAmbient = 0;
 bool leftReady = false;
@@ -98,6 +100,9 @@ void sensing_loop() {
     }
 }
 
+/*
+* Function to read the IR value for the wall
+*/
 int sensing_readIRValue() {
     return analogRead(IR_read);
 }
