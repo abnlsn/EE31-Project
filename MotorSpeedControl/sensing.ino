@@ -13,9 +13,10 @@ const int leftColorSensor = A1; // Pin to arduino
 const int rightColorSensor = A2; // Pin to arduino
 
 // TODO: Define these pin numbers
-const int redLed;
-const int greenLed;
-const int blueLed;
+const int redLed = 11;
+const int greenLed = 12; // TODO: yellow
+const int blueLed = 13;
+const int irLed = 7;
 
 
 // Variable Definitions
@@ -26,6 +27,10 @@ Color rightColor = {0, 0, 0};
 int rightAmbient = 0;
 bool rightReady = false;
 
+int irAmbient = 0;
+int irValue = 0;
+
+// Define Color States
 typedef enum {
     color_IDLE,
     color_READING_AMBIENT,
@@ -34,7 +39,14 @@ typedef enum {
     color_READING_BLUE
 } ColorState;
 
+// Define IR States
+typedef enum {
+    ir_READING_AMBIENT,
+    ir_READING_VALUE,
+} IRState;
+
 ColorState colorState = color_IDLE;
+IRState irState = ir_READING_AMBIENT;
 
 /*
 * Function to set up the color sensing protocols and making sure each pin is
@@ -47,7 +59,7 @@ void sensing_setup() {
     pinMode(redLed, OUTPUT);
     pinMode(greenLed, OUTPUT);
     pinMode(blueLed, OUTPUT);
-
+    pinMode(irLed, OUTPUT);
 }
 
 /*
@@ -55,6 +67,16 @@ void sensing_setup() {
 * initialized   
 */
 void sensing_loop() {
+    if (irState == ir_READING_AMBIENT) {
+        irAmbient = analogRead(IR_read);
+        irState = ir_READING_VALUE;
+        digitalWrite(irLed, LOW);
+    } else if (irState == ir_READING_VALUE) {
+        irValue = analogRead(IR_read) - irAmbient;
+        irState = ir_READING_AMBIENT;
+        digitalWrite(irLed, HIGH);
+    }
+
     if (colorState == color_IDLE) {
         digitalWrite(redLed, LOW);
         digitalWrite(greenLed, LOW);
@@ -65,8 +87,13 @@ void sensing_loop() {
         digitalWrite(greenLed, LOW);
         digitalWrite(blueLed, LOW);
 
-        leftAmbient = analogRead(leftColorSensor);
-        rightAmbient = analogRead(rightColorSensor);
+        Serial.print("Ambient: ");
+        Serial.print(analogRead(leftColorSensor));
+        Serial.print(" ");
+        Serial.println(analogRead(rightColorSensor));
+
+        leftAmbient = 0;
+        rightAmbient = 0;
 
         colorState = color_READING_RED;
 
@@ -74,6 +101,8 @@ void sensing_loop() {
         digitalWrite(redLed, HIGH);
         digitalWrite(greenLed, LOW);
         digitalWrite(blueLed, LOW);
+
+        delay(1);
 
         leftColor.red = analogRead(leftColorSensor) - leftAmbient;
         rightColor.red = analogRead(rightColorSensor) - rightAmbient;
@@ -84,6 +113,8 @@ void sensing_loop() {
         digitalWrite(greenLed, HIGH);
         digitalWrite(blueLed, LOW);
 
+        delay(1);
+
         leftColor.green = analogRead(leftColorSensor) - leftAmbient;
         rightColor.green = analogRead(rightColorSensor) - rightAmbient;
 
@@ -92,6 +123,8 @@ void sensing_loop() {
         digitalWrite(redLed, LOW);
         digitalWrite(greenLed, LOW);
         digitalWrite(blueLed, HIGH);
+
+        delay(1);
 
         leftColor.blue = analogRead(leftColorSensor) - leftAmbient;
         rightColor.blue = analogRead(rightColorSensor) - rightAmbient;
@@ -106,7 +139,6 @@ void sensing_loop() {
 int sensing_readIRValue() {
     return analogRead(IR_read);
 }
-
 
 /*
  * Determine if the color sensor should be line following or not

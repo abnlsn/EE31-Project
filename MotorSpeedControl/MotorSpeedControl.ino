@@ -7,16 +7,26 @@
 
 void setup() {
   Serial.begin(9600);
-  motorspeed_setup();
+  // motorspeed_setup();
   sensing_setup();
 
   delay(100);
-  motorspeed_rotate(DEGREES_90);
+  // motorspeed_rotate(DEGREES_90);
   // motorspeed_set_direction(1);
 }
 
 void loop() {
-  motorspeed_loop();
+  // motorspeed_loop();
+  sensing_loop();
+  if (sensing_colorReady()) {
+    sensing_readRightColor();
+    sensing_readLeftColor();
+    sensing_readColors();
+    Serial.println("");
+
+  }
+
+  delay(500);
 
   // Serial.println(sensing_readIRValue());
 
