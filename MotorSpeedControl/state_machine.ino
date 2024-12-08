@@ -44,28 +44,55 @@ void statemachine_run() {
   Serial.println(state);
   if (state == START) {
     // do nothing, relies on message from user to continue
+    state = FIND_WALL;
 
   } else if (state == FIND_WALL) {
     // stay in state until wall is detected
-    if (sensing_readIRValue() > 625) {
+    // if (sensing_readIRValue() > 625) {
       state = TURN_TO_RED;
-    }
+    // }
 
   } else if (state == TURN_TO_RED) {
     // stay in state until desired degrees of rotation is reached
-    motorspeed_rotate(DEGREES_90);
+    motorspeed_rotate(DEGREES_90); // TODO: NEED TO GET CORRECT DEGREES
+
+    // if we are done rotating, move to next state 
+    // if (!motorspeed_isrotating()) {
+      state = FIND_RED;
+    // }
 
   } else if (state == FIND_RED) {
     // stay in state until red is detected
 
+    // check if left and right sensors are on red
+    if (sensing_colorReady()) {
+
+      if (sensing_readLeftColor() == COLOR_RED && sensing_readRightColor() == COLOR_RED) {
+        state = FOLLOW_RED;
+      }
+
+      sensing_startColors();
+    }
+
   } else if (state == FOLLOW_RED) {
     // follow red line
-
+    linefollow_loop();
+    
   } else if (state == FIND_YELLOW) {
     // stay in state until yellow is detected
 
+        if (sensing_colorReady()) {
+
+      if (sensing_readLeftColor() == COLOR_YELLOW && sensing_readRightColor() == COLOR_YELLOW) {
+        state = FOLLOW_YELLOW;
+      }
+
+      sensing_startColors();
+    }
+
   } else if (state == FOLLOW_YELLOW) {
     // follow yellow line
+    linefollow_loop();
 
   } else if (state == TURN_TO_START) {
     // stay in state until desired degrees of rotation is reached

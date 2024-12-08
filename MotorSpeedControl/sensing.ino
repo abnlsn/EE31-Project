@@ -18,14 +18,28 @@ const int greenLed = 12; // TODO: yellow
 const int blueLed = 13;
 const int irLed = 7;
 
+// Range Values for the Color Sensor
+#define LEFT_RED_HIGH 250
+#define LEFT_RED_LOW 90
+#define LEFT_BLUE_HIGH 809
+#define LEFT_BLUE_LOW LEFT_RED_HIGH
+#define LEFT_YELLOW_LOW 810
+#define LEFT_YELLOW_HIGH 1200
+
+#define RIGHT_RED_HIGH 180
+#define RIGHT_RED_LOW 90
+#define RIGHT_BLUE_HIGH 600
+#define RIGHT_BLUE_LOW 300
+#define RIGHT_YELLOW_LOW (RIGHT_BLUE_HIGH)
+#define RIGHT_YELLOW_HIGH 1200
 
 // Variable Definitions
-Color leftColor = {0, 0, 0};
+int leftColorSum = 0;
 int leftAmbient = 0;
-bool leftReady = false;
-Color rightColor = {0, 0, 0};
+
+int rightColorSum = 0;
 int rightAmbient = 0;
-bool rightReady = false;
+
 
 int irAmbient = 0;
 int irValue = 0;
@@ -67,36 +81,11 @@ void sensing_setup() {
 * initialized   
 */
 void sensing_loop() {
-    if (irState == ir_READING_AMBIENT) {
-        irAmbient = analogRead(IR_read);
-        irState = ir_READING_VALUE;
-        digitalWrite(irLed, LOW);
-    } else if (irState == ir_READING_VALUE) {
-        irValue = analogRead(IR_read) - irAmbient;
-        irState = ir_READING_AMBIENT;
-        digitalWrite(irLed, HIGH);
-    }
 
     if (colorState == color_IDLE) {
         digitalWrite(redLed, LOW);
         digitalWrite(greenLed, LOW);
         digitalWrite(blueLed, LOW);
-    
-    } else if (colorState == color_READING_AMBIENT) {
-        digitalWrite(redLed, LOW);
-        digitalWrite(greenLed, LOW);
-        digitalWrite(blueLed, LOW);
-
-        Serial.print("Ambient: ");
-        Serial.print(analogRead(leftColorSensor));
-        Serial.print(" ");
-        Serial.println(analogRead(rightColorSensor));
-
-        leftAmbient = 0;
-        rightAmbient = 0;
-
-        colorState = color_READING_RED;
-
     } else if (colorState == color_READING_RED) {
         digitalWrite(redLed, HIGH);
         digitalWrite(greenLed, LOW);
@@ -104,8 +93,8 @@ void sensing_loop() {
 
         delay(1);
 
-        leftColor.red = analogRead(leftColorSensor) - leftAmbient;
-        rightColor.red = analogRead(rightColorSensor) - rightAmbient;
+        leftColorSum = analogRead(leftColorSensor);
+        rightColorSum = analogRead(rightColorSensor);
         
         colorState = color_READING_GREEN;
     } else if (colorState == color_READING_GREEN) {
@@ -115,8 +104,8 @@ void sensing_loop() {
 
         delay(1);
 
-        leftColor.green = analogRead(leftColorSensor) - leftAmbient;
-        rightColor.green = analogRead(rightColorSensor) - rightAmbient;
+        leftColorSum += analogRead(leftColorSensor);
+        rightColorSum += analogRead(rightColorSensor);
 
         colorState = color_READING_BLUE;
     } else if (colorState == color_READING_BLUE) {
@@ -126,8 +115,8 @@ void sensing_loop() {
 
         delay(1);
 
-        leftColor.blue = analogRead(leftColorSensor) - leftAmbient;
-        rightColor.blue = analogRead(rightColorSensor) - rightAmbient;
+        leftColorSum = analogRead(leftColorSensor);
+        rightColorSum = analogRead(rightColorSensor);
         
         colorState = color_IDLE;
     }
@@ -149,33 +138,49 @@ bool sensing_colorReady() {
 
 /*
  * Start reading values for each color
-*/
-void sensing_readColors() {
-    colorState = color_READING_AMBIENT;
+*/  
+void sensing_startColors() {
+    colorState = color_READING_RED;
+}
+
+SensorColor getColorLeft(int sum) {
+    if (sum > LEFT_RED_LOW && sum < LEFT_RED_HIGH) {
+        return COLOR_RED;
+    } else if (sum > LEFT_BLUE_LOW && sum < LEFT_BLUE_HIGH) {
+        return COLOR_BLUE;
+    } else if (sum > LEFT_YELLOW_LOW && sum < LEFT_YELLOW_HIGH) {
+        return COLOR_YELLOW;
+    } else {
+        return COLOR_BLACK;
+    }
+}
+
+SensorColor getColorRight(int sum) {
+    if (sum > RIGHT_RED_LOW && sum < RIGHT_RED_HIGH) {
+        return COLOR_RED;
+    } else if (sum > RIGHT_BLUE_LOW && sum < RIGHT_BLUE_HIGH) {
+        return COLOR_BLUE;
+    } else if (sum > RIGHT_YELLOW_LOW && sum < RIGHT_YELLOW_HIGH) {
+        return COLOR_YELLOW;
+    } else {
+        return COLOR_BLACK;
+    }
 }
 
 /*
  * Read from the left color sensor
 */
-Color sensing_readLeftColor() {
+SensorColor sensing_readLeftColor() {
     Serial.print("Left Color: ");
-    Serial.print(leftColor.red);
-    Serial.print(" ");
-    Serial.print(leftColor.green);
-    Serial.print(" ");
-    Serial.println(leftColor.blue);
-    return leftColor;
+    Serial.println(leftColorSum);
+    return getColorLeft(leftColorSum);
 }
 
 /*
  * Read from right color sensor
 */
-Color sensing_readRightColor() {
+SensorColor sensing_readRightColor() {
     Serial.print("Right Color: ");
-    Serial.print(rightColor.red);
-    Serial.print(" ");
-    Serial.print(rightColor.green);
-    Serial.print(" ");
-    Serial.println(rightColor.blue);
-    return rightColor;
+    Serial.println(rightColorSum);
+    return getColorRight(rightColorSum);
 }

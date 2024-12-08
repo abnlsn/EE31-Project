@@ -19,6 +19,7 @@ void motorspeed_loop();
 void motorspeed_set_direction(int new_direction);
 void motorspeed_set_offset(int new_offset);
 void motorspeed_rotate(int amount);
+bool motorspeed_isrotating();
 
 // Functions to control the wheels 
 void left_fwd(int duty);

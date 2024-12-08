@@ -1,5 +1,6 @@
 #include "motor_speed.h"
 #include "sensing.h"
+#include "state_machine.h"
 
 #ifndef MOTOR_SPEED_H
 #define MOTOR_SPEED_H
@@ -7,36 +8,45 @@
 
 void setup() {
   Serial.begin(9600);
-  // motorspeed_setup();
+  motorspeed_setup();
   sensing_setup();
 
   delay(100);
-  // motorspeed_rotate(DEGREES_90);
-  // motorspeed_set_direction(1);
+}
+
+#define DEBUG_PRINT_COLOR(color_enum) {\
+    if (color_enum == COLOR_RED) {\
+      Serial.print("RED");\
+    } else if (color_enum == COLOR_YELLOW) {\
+      Serial.print("YELLOW");\
+    } else if (color_enum == COLOR_BLUE) {\
+      Serial.print("BLUE");\
+    } else if (color_enum == COLOR_BLACK) {\
+      Serial.print("BLACK");\
+    }\
 }
 
 void loop() {
-  // motorspeed_loop();
+  motorspeed_loop();
   sensing_loop();
-  if (sensing_colorReady()) {
-    sensing_readRightColor();
-    sensing_readLeftColor();
-    sensing_readColors();
-    Serial.println("");
+  statemachine_run();
 
+  if (sensing_colorReady()) {
+    SensorColor left = sensing_readLeftColor();
+    SensorColor right = sensing_readRightColor();
+
+    sensing_startColors();
+
+    Serial.print("Left: ");
+    DEBUG_PRINT_COLOR(left);
+    Serial.println("");
+    Serial.print("Right: ");
+    DEBUG_PRINT_COLOR(right);
+    Serial.println("");
   }
 
-  delay(500);
+  delay(100);
 
-  // Serial.println(sensing_readIRValue());
-
-  // String msg = Serial.readString();
-  // msg.trim();
-  // Serial.println(msg);
-
-  // statemachine_update(msg);
-
-  // statemachine_run();
 }
 
 #endif

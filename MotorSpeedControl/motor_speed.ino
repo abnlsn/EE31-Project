@@ -9,6 +9,7 @@
 
 #include "motor_speed.h"
 #include "sensing.h"
+#include "motor_calibration.h"
 
 // Pin Numbers for Arduino Connections
 const int left_motor_encoder = 3;
@@ -32,10 +33,8 @@ int rotate_amount = 0; // positive = right, negative = left
 
 const int NUM_ROTATIONS = 50;
 
-#define COLOR_GREATERTHAN(a, b) ((a.red > b.red) && (a.green > b.green) && (a.blue > b.blue))
-Color colorThreshold;
-int colorLeftCount = 0;
-int colorRightCount = 0;
+int lineLeftCount = 0;
+int lineRightCount = 0;
 
 // State Definitions for Driving and Rotating
 typedef enum {
@@ -166,7 +165,7 @@ void motorspeed_loop() {
     }
   }
   else if (motorspeed_state == FOLLOW_COLOR) {
-    linefollow_loop();
+    // linefollow_loop();
     motor_drive_loop();
   } else {
     // IDLE
@@ -181,6 +180,10 @@ void motorspeed_set_offset(int new_offset) {
   offset = new_offset;
 }
 
+bool motorspeed_isrotating() {
+  return motorspeed_state == ROTATE;
+}
+
 // 0 = off, <0 backwards, >0 forwards
 void motorspeed_set_direction(int new_direction) {
   if (new_direction == 0) {
@@ -193,39 +196,41 @@ void motorspeed_set_direction(int new_direction) {
 }
 
 void linefollow_loop() {
-  sensing_loop();
   if (!sensing_colorReady()) return; // line following colors are not ready, try again next loop
 
-  Color left_color = sensing_readLeftColor();
-  Color right_color = sensing_readRightColor();
+  SensorColor left_color = sensing_readLeftColor();
+  SensorColor right_color = sensing_readRightColor();
 
-  if (COLOR_GREATERTHAN(left_color, colorThreshold) && COLOR_GREATERTHAN(right_color, colorThreshold)) {
-    // We are on track
-    colorLeftCount = 0;
-    colorRightCount = 0;
-  } else if (COLOR_GREATERTHAN(left_color, colorThreshold)) {
-    // We are too far right
-    colorRightCount++;
-  } else if (COLOR_GREATERTHAN(right_color, colorThreshold)) {
+  if (left_color != COLOR_BLACK && right_color != COLOR_BLACK) {
+    // We are on track, both sensors are reading a color
+    lineLeftCount = 0;
+    lineRightCount = 0;
+  } else if (left_color == COLOR_BLACK) {
     // We are too far left
-    colorLeftCount++;
-  } else {
-    // We are off track, rely on the previous counts to correct
-  }
+    lineRightCount++;
+  } else if (right_color == COLOR_BLACK) {
+    // We are too far right
+    lineLeftCount++;
+  } // We are off track, rely on the previous counts to correct
 
-  if (colorLeftCount != 0) {
-    motorspeed_set_offset(-10 * colorLeftCount);
-  } else if (colorRightCount != 0) {
-    motorspeed_set_offset(10 * colorRightCount);
+  if (lineLeftCount != 0) {
+    motorspeed_set_offset(-10 * lineLeftCount);
+  } else if (lineRightCount != 0) {
+    motorspeed_set_offset(10 * lineRightCount);
   } else {
     motorspeed_set_offset(0);
   }
+
+  Serial.print("Left offset: ");
+  Serial.println(lineLeftCount);
+  Serial.print("Right offset: ");
+  Serial.println(lineRightCount);
 }
 
-void follow_color(Color threshold) {
-  colorThreshold = threshold;
-  motorspeed_state = FOLLOW_COLOR; 
-}
+// void follow_color(Color threshold) {
+//   colorThreshold = threshold;
+//   motorspeed_state = FOLLOW_COLOR; 
+// }
 
 void left_fwd(int duty) {
   digitalWrite(left_motorB, LOW);
