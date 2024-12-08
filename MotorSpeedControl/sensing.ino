@@ -13,7 +13,7 @@ const int leftColorSensor = A1; // Pin to arduino
 const int rightColorSensor = A2; // Pin to arduino
 
 // TODO: Define these pin numbers
-const int redLed = 11;
+const int redLed = 9;
 const int greenLed = 12; // TODO: yellow
 const int blueLed = 13;
 const int irLed = 7;

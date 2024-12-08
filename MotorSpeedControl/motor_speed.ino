@@ -14,10 +14,10 @@
 // Pin Numbers for Arduino Connections
 const int left_motor_encoder = 3;
 const int right_motor_encoder = 4;
-const int left_motorA = 5;
-const int left_motorB = 6;
-const int right_motorA = 9;
-const int right_motorB = 10;
+const int left_motorA = 10;
+const int left_motorB = 11;
+const int right_motorA = 5;
+const int right_motorB = 6;
 
 // Motor Speed Control Variables
 int left_count = 0;
