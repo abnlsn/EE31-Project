@@ -47,19 +47,25 @@ void statemachine_update(String msg) {
 void statemachine_run() {
   Serial.print("State: ");
   Serial.println(state);
+
   if (state == START) {
     // do nothing, relies on message from user to continue
     // state = FIND_WALL;
     if (wifi_getmessage() == "start") {
       state = FIND_WALL;
+      wifi_sendmessage("New state: FIND_WALL");
     }
 
   } else if (state == FIND_WALL) {
     // stay in state until wall is detected
     motorspeed_set_direction(1);
     motorspeed_set_offset(0);
-    if (sensing_readIRValue() > 120) {
+    int IR_value = sensing_readIRValue();
+    Serial.print("IR Value: ");
+    Serial.println(IR_value);
+    if (IR_value > IR_THRESHOLD) {
       state = TURN_TO_RED;
+      wifi_sendmessage("New state: TURN_TO_RED");
       motorspeed_stop_momentarily();
       motorspeed_rotate(DEGREES_90); // TODO: NEED TO GET CORRECT DEGREES
     }
@@ -70,6 +76,7 @@ void statemachine_run() {
     // if we are done rotating, move to next state 
     if (!motorspeed_isrotating()) {
       state = FIND_RED;
+      wifi_sendmessage("New state: FIND_RED");
     }
 
   } else if (state == FIND_RED) {
@@ -80,6 +87,7 @@ void statemachine_run() {
 
       if (sensing_readLeftColor() == COLOR_RED && sensing_readRightColor() == COLOR_RED) {
         state = START;
+        wifi_sendmessage("New state: START");
       }
 
       sensing_startColors();
@@ -110,6 +118,11 @@ void statemachine_run() {
 
   } else if (state == FIND_START) {
     // stay in state until start is detected
+  }
+
+  if (wifi_getmessage() == "reset") {
+    state = START;
+    wifi_sendmessage("Reset to: START");
   }
 }
 

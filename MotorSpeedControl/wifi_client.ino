@@ -142,6 +142,16 @@ String wifi_getmessage() {
   return "";
 }
 
+void wifi_sendmessage(String message) {
+  if (client.connected()) {
+    client.beginMessage(TYPE_TEXT);
+    client.print(message);
+    client.endMessage();
+  } else {
+    Serial.println("Disconnected from server");
+  }
+}
+
 
 void printWifiStatus() {
   // print the SSID of the network you're attached to:
