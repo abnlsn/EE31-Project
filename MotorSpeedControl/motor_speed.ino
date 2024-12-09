@@ -12,8 +12,8 @@
 #include "motor_calibration.h"
 
 // Pin Numbers for Arduino Connections
-const int left_motor_encoder = 3;
-const int right_motor_encoder = 4;
+const int left_motor_encoder = 12;
+const int right_motor_encoder = 13;
 const int left_motorA = 10;
 const int left_motorB = 11;
 const int right_motorA = 5;
@@ -70,6 +70,7 @@ void rotation_right() {
 void motor_drive_loop() {
   int difference = left_count - right_count;
 
+  Serial.print("Encoders: ");
   Serial.print(difference);
   Serial.print(" ");
   Serial.print(left_count);
@@ -138,6 +139,8 @@ bool rotate_done() {
   return rotate_amount == 0;
 }
 
+// amount > 0 => turn right
+// amount < 0 => turn left
 void motorspeed_rotate(int amount) {
   rotate_amount = amount;
   if (rotate_amount > 0) {
@@ -260,8 +263,8 @@ void right_rev(int duty) {
 *  Function to keep the motors from getting damaged from moving forward then 
 *  backwards to quickly. 
 */
-void stop_momentarily() {
+void motorspeed_stop_momentarily() {
   right_fwd(0);
   left_fwd(0);
-  delay(10);
+  delay(2);
 }

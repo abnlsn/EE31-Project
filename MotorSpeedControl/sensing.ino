@@ -8,15 +8,16 @@
 
 #include "sensing.h"
 
-const int IR_read = A0; // Pin to arduino
+const int IR_read = A5; // Pin to arduino
+const int IR_transistor = A0;
 const int leftColorSensor = A1; // Pin to arduino 
 const int rightColorSensor = A2; // Pin to arduino
 
 // TODO: Define these pin numbers
-const int redLed = 9;
-const int greenLed = 12; // TODO: yellow
-const int blueLed = 13;
-const int irLed = 7;
+const int redLed = 7;
+const int greenLed = 8; // TODO: yellow
+const int blueLed = 9;
+const int irLed = 2;
 
 // Range Values for the Color Sensor
 #define LEFT_RED_HIGH 250
@@ -67,13 +68,17 @@ IRState irState = ir_READING_AMBIENT;
 * initialized   
 */
 void sensing_setup() {
-    pinMode(IR_read, INPUT);
+    pinMode(IR_transistor, OUTPUT);
     pinMode(leftColorSensor, INPUT);
+    pinMode(IR_read, INPUT);
     pinMode(rightColorSensor, INPUT);
     pinMode(redLed, OUTPUT);
     pinMode(greenLed, OUTPUT);
     pinMode(blueLed, OUTPUT);
     pinMode(irLed, OUTPUT);
+
+    digitalWrite(irLed, HIGH);
+    digitalWrite(IR_transistor, HIGH);
 }
 
 /*
@@ -126,7 +131,9 @@ void sensing_loop() {
 * Function to read the IR value for the wall
 */
 int sensing_readIRValue() {
-    return analogRead(IR_read);
+    irValue = analogRead(IR_read);
+    return irValue;
+    // return 0;
 }
 
 /*

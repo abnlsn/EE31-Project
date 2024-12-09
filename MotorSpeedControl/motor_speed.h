@@ -21,6 +21,8 @@ void motorspeed_set_offset(int new_offset);
 void motorspeed_rotate(int amount);
 bool motorspeed_isrotating();
 
+void motorspeed_stop_momentarily();
+
 // Functions to control the wheels 
 void left_fwd(int duty);
 void right_fwd(int duty);

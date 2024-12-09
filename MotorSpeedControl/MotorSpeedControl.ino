@@ -31,22 +31,24 @@ void loop() {
   sensing_loop();
   statemachine_run();
 
-  if (sensing_colorReady()) {
-    SensorColor left = sensing_readLeftColor();
-    SensorColor right = sensing_readRightColor();
+  // if (sensing_colorReady()) {
+  //   SensorColor left = sensing_readLeftColor();
+  //   SensorColor right = sensing_readRightColor();
 
-    sensing_startColors();
+  //   sensing_startColors();
 
-    Serial.print("Left: ");
-    DEBUG_PRINT_COLOR(left);
-    Serial.println("");
-    Serial.print("Right: ");
-    DEBUG_PRINT_COLOR(right);
-    Serial.println("");
-  }
+  //   Serial.print("Left: ");
+  //   DEBUG_PRINT_COLOR(left);
+  //   Serial.println("");
+  //   Serial.print("Right: ");
+  //   DEBUG_PRINT_COLOR(right);
+  //   Serial.println("");
+  //   Serial.print("IR: ");
+  //   Serial.println(sensing_readIRValue());
+  //   Serial.println("");
+  // }
 
   delay(100);
-
 }
 
 #endif

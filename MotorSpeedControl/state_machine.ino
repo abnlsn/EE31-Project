@@ -9,6 +9,7 @@
 #include "motor_speed.h"
 #include "sensing.h"
 
+#define IR_THRESHOLD 120
 
 // Variables to define the actions required for the project demo
 enum State {
@@ -23,7 +24,7 @@ enum State {
   FIND_START
 };
 
-enum State state = START; // State variable
+enum State state = FIND_WALL; // State variable
 
 
 /* Function in order to receive commands from the server */
@@ -44,22 +45,25 @@ void statemachine_run() {
   Serial.println(state);
   if (state == START) {
     // do nothing, relies on message from user to continue
-    state = FIND_WALL;
+    // state = FIND_WALL;
 
   } else if (state == FIND_WALL) {
     // stay in state until wall is detected
-    // if (sensing_readIRValue() > 625) {
+    motorspeed_set_direction(1);
+    motorspeed_set_offset(0);
+    if (sensing_readIRValue() > 120) {
       state = TURN_TO_RED;
-    // }
+      motorspeed_stop_momentarily();
+      motorspeed_rotate(DEGREES_90); // TODO: NEED TO GET CORRECT DEGREES
+    }
 
   } else if (state == TURN_TO_RED) {
     // stay in state until desired degrees of rotation is reached
-    motorspeed_rotate(DEGREES_90); // TODO: NEED TO GET CORRECT DEGREES
 
     // if we are done rotating, move to next state 
-    // if (!motorspeed_isrotating()) {
+    if (!motorspeed_isrotating()) {
       state = FIND_RED;
-    // }
+    }
 
   } else if (state == FIND_RED) {
     // stay in state until red is detected
@@ -68,7 +72,7 @@ void statemachine_run() {
     if (sensing_colorReady()) {
 
       if (sensing_readLeftColor() == COLOR_RED && sensing_readRightColor() == COLOR_RED) {
-        state = FOLLOW_RED;
+        state = START;
       }
 
       sensing_startColors();
