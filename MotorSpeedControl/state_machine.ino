@@ -8,6 +8,7 @@
 */
 #include "motor_speed.h"
 #include "sensing.h"
+#include "wifi_client.h"
 
 #define IR_THRESHOLD 120
 
@@ -24,11 +25,14 @@ enum State {
   FIND_START
 };
 
-enum State state = FIND_WALL; // State variable
+enum State state = START; // State variable
+
+void statemachine_setup() {
+  wifi_setup();
+}
 
 
 /* Function in order to receive commands from the server */
-
 void statemachine_update(String msg) {
   if (msg == "start") {
     state = FIND_WALL;
@@ -46,6 +50,9 @@ void statemachine_run() {
   if (state == START) {
     // do nothing, relies on message from user to continue
     // state = FIND_WALL;
+    if (wifi_getmessage() == "start") {
+      state = FIND_WALL;
+    }
 
   } else if (state == FIND_WALL) {
     // stay in state until wall is detected

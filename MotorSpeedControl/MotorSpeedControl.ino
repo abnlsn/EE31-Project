@@ -10,6 +10,7 @@ void setup() {
   Serial.begin(9600);
   motorspeed_setup();
   sensing_setup();
+  statemachine_setup();
 
   delay(100);
 }

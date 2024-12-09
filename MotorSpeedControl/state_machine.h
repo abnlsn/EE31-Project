@@ -10,5 +10,7 @@
 // Updates State Machine
 void statemachine_update(String msg);
 
+void statemachine_setup();
+
 // Runs the state machine in conjunction with the server
 void statemachine_run();

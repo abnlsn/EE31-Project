@@ -25,9 +25,10 @@
 #include <SPI.h>
 #include <WiFiNINA.h>
 #include <ArduinoHttpClient.h>
-#include "state_machine.h"
-
 #include "arduino_secrets.h"
+
+#include "wifi_client.h"
+
 ///////please enter your sensitive data in the Secret tab/arduino_secrets.h
 char ssid[] = SECRET_SSID;  // your network SSID (name)
 char pass[] = SECRET_PASS;  // your network password (use for WPA, or use as key for WEP)
@@ -48,7 +49,7 @@ WebSocketClient client = WebSocketClient(wifi_client, server, portNumber);
 
 int count = 0;
 
-void setup() {
+void wifi_setup() {
   // Setup state machine
 
   //Initialize serial and wait for port to open:
@@ -56,8 +57,6 @@ void setup() {
   while (!Serial) {
     ;  // wait for serial port to connect. Needed for native USB port only
   }
-
-  statemachine_setup();
 
   // check for the WiFi module:
   if (WiFi.status() == WL_NO_MODULE) {
@@ -87,6 +86,11 @@ void setup() {
 
   Serial.println("\nStarting connection to server...");
   // if you get a connection, report back via serial:
+
+  client.begin();
+  client.beginMessage(TYPE_TEXT);
+  client.print(HTTP_UUID);
+  client.endMessage();
 }
 
 String line_getvar(String body) {
@@ -121,29 +125,21 @@ String line_getvar(String body) {
 }
 
 
-void loop() {
-  client.begin();
-  client.beginMessage(TYPE_TEXT);
-  client.print(HTTP_UUID);
-  client.endMessage();
-
-  while (client.connected()) {
-    if (count > 6000) {
-      count = 0;
-    }
-
+String wifi_getmessage() {
+  if (client.connected()) {
     // check if a message is available to be received
     int messageSize = client.parseMessage();
     if (messageSize > 0) {
       Serial.println("Received a message:");
       String response = client.readString();
       String msg = line_getvar(response);
-      Serial.println(msg);
+      Serial.println(response);
+      return msg;
     }
-
-    // wait 10ms
-    delay(10);
+  } else {
+    Serial.println("Disconnected from server");
   }
+  return "";
 }
 
 
