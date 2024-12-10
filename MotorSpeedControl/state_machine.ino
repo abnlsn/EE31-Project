@@ -10,7 +10,7 @@
 #include "sensing.h"
 #include "wifi_client.h"
 
-#define IR_THRESHOLD 120
+#define IR_THRESHOLD 130
 
 // Variables to define the actions required for the project demo
 enum State {
@@ -65,9 +65,10 @@ void statemachine_run() {
     Serial.println(IR_value);
     if (IR_value > IR_THRESHOLD) {
       state = TURN_TO_RED;
+      wifi_sendmessage(String(IR_value));
       wifi_sendmessage("New state: TURN_TO_RED");
       motorspeed_stop_momentarily();
-      motorspeed_rotate(DEGREES_90); // TODO: NEED TO GET CORRECT DEGREES
+      motorspeed_rotate(DEGREES_90 * 2); // TODO: NEED TO GET CORRECT DEGREES
     }
 
   } else if (state == TURN_TO_RED) {
@@ -77,6 +78,8 @@ void statemachine_run() {
     if (!motorspeed_isrotating()) {
       state = FIND_RED;
       wifi_sendmessage("New state: FIND_RED");
+      motorspeed_stop_momentarily();
+      motorspeed_set_direction(1);
     }
 
   } else if (state == FIND_RED) {
@@ -122,6 +125,7 @@ void statemachine_run() {
 
   if (wifi_getmessage() == "reset") {
     state = START;
+    motorspeed_set_direction(0);
     wifi_sendmessage("Reset to: START");
   }
 }

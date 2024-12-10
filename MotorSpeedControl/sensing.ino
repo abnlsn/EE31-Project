@@ -8,6 +8,12 @@
 
 #include "sensing.h"
 
+typedef struct {
+    int r;
+    int y;
+    int b;
+} Color;
+
 const int IR_read = A5; // Pin to arduino
 const int IR_transistor = A0;
 const int leftColorSensor = A1; // Pin to arduino 
@@ -15,24 +21,21 @@ const int rightColorSensor = A2; // Pin to arduino
 
 // TODO: Define these pin numbers
 const int redLed = 7;
-const int greenLed = 8; // TODO: yellow
+const int yellowLed = 8; // TODO: yellow
 const int blueLed = 9;
 const int irLed = 2;
 
-// Range Values for the Color Sensor
-#define LEFT_RED_HIGH 250
-#define LEFT_RED_LOW 90
-#define LEFT_BLUE_HIGH 809
-#define LEFT_BLUE_LOW LEFT_RED_HIGH
-#define LEFT_YELLOW_LOW 810
-#define LEFT_YELLOW_HIGH 1200
+Color leftColor = {0, 0, 0};
+Color rightColor = {0, 0, 0};
 
-#define RIGHT_RED_HIGH 180
-#define RIGHT_RED_LOW 90
-#define RIGHT_BLUE_HIGH 600
-#define RIGHT_BLUE_LOW 300
-#define RIGHT_YELLOW_LOW (RIGHT_BLUE_HIGH)
-#define RIGHT_YELLOW_HIGH 1200
+// Range Values for the Color Sensor
+#define LEFT_RED_LOW 320
+#define LEFT_BLUE_LOW 280
+#define LEFT_YELLOW_LOW 180
+
+#define RIGHT_RED_LOW 115
+#define RIGHT_BLUE_LOW 500
+#define RIGHT_YELLOW_LOW 65
 
 // Variable Definitions
 int leftColorSum = 0;
@@ -73,12 +76,16 @@ void sensing_setup() {
     pinMode(IR_read, INPUT);
     pinMode(rightColorSensor, INPUT);
     pinMode(redLed, OUTPUT);
-    pinMode(greenLed, OUTPUT);
+    pinMode(yellowLed, OUTPUT);
     pinMode(blueLed, OUTPUT);
     pinMode(irLed, OUTPUT);
 
     digitalWrite(irLed, HIGH);
     digitalWrite(IR_transistor, HIGH);
+
+    delay(50);
+    analogRead(IR_read);
+    delay(50);
 }
 
 /*
@@ -87,41 +94,44 @@ void sensing_setup() {
 */
 void sensing_loop() {
 
+    irValue = analogRead(IR_read);
+
     if (colorState == color_IDLE) {
         digitalWrite(redLed, LOW);
-        digitalWrite(greenLed, LOW);
+        digitalWrite(yellowLed, LOW);
         digitalWrite(blueLed, LOW);
     } else if (colorState == color_READING_RED) {
         digitalWrite(redLed, HIGH);
-        digitalWrite(greenLed, LOW);
+        digitalWrite(yellowLed, LOW);
         digitalWrite(blueLed, LOW);
 
         delay(1);
 
-        leftColorSum = analogRead(leftColorSensor);
-        rightColorSum = analogRead(rightColorSensor);
-        
+        leftColor.r = analogRead(leftColorSensor);
+        rightColor.r = analogRead(rightColorSensor);
+
         colorState = color_READING_GREEN;
     } else if (colorState == color_READING_GREEN) {
         digitalWrite(redLed, LOW);
-        digitalWrite(greenLed, HIGH);
+        digitalWrite(yellowLed, HIGH);
         digitalWrite(blueLed, LOW);
 
         delay(1);
 
-        leftColorSum += analogRead(leftColorSensor);
-        rightColorSum += analogRead(rightColorSensor);
+        leftColor.y = analogRead(leftColorSensor);
+        rightColor.y = analogRead(rightColorSensor);
 
         colorState = color_READING_BLUE;
     } else if (colorState == color_READING_BLUE) {
         digitalWrite(redLed, LOW);
-        digitalWrite(greenLed, LOW);
+        digitalWrite(yellowLed, LOW);
         digitalWrite(blueLed, HIGH);
 
         delay(1);
 
-        leftColorSum = analogRead(leftColorSensor);
-        rightColorSum = analogRead(rightColorSensor);
+        leftColor.b = analogRead(leftColorSensor);
+        rightColor.b = analogRead(rightColorSensor);
+
         
         colorState = color_IDLE;
     }
@@ -131,7 +141,6 @@ void sensing_loop() {
 * Function to read the IR value for the wall
 */
 int sensing_readIRValue() {
-    irValue = analogRead(IR_read);
     return irValue;
     // return 0;
 }
@@ -151,11 +160,17 @@ void sensing_startColors() {
 }
 
 SensorColor getColorLeft(int sum) {
-    if (sum > LEFT_RED_LOW && sum < LEFT_RED_HIGH) {
+    Serial.print("Left Color: ");
+    Serial.print(leftColor.r);
+    Serial.print(" ");
+    Serial.print(leftColor.y);
+    Serial.print(" ");
+    Serial.println(leftColor.b);
+    if (leftColor.r > LEFT_RED_LOW && leftColor.y < LEFT_YELLOW_LOW && leftColor.b < LEFT_BLUE_LOW) {
         return COLOR_RED;
-    } else if (sum > LEFT_BLUE_LOW && sum < LEFT_BLUE_HIGH) {
+    } else if (leftColor.b > LEFT_BLUE_LOW && leftColor.y < LEFT_YELLOW_LOW) {
         return COLOR_BLUE;
-    } else if (sum > LEFT_YELLOW_LOW && sum < LEFT_YELLOW_HIGH) {
+    } else if (leftColor.y > LEFT_YELLOW_LOW) {
         return COLOR_YELLOW;
     } else {
         return COLOR_BLACK;
@@ -163,11 +178,17 @@ SensorColor getColorLeft(int sum) {
 }
 
 SensorColor getColorRight(int sum) {
-    if (sum > RIGHT_RED_LOW && sum < RIGHT_RED_HIGH) {
+    Serial.print("Right Color: ");
+    Serial.print(rightColor.r);
+    Serial.print(" ");
+    Serial.print(rightColor.y);
+    Serial.print(" ");
+    Serial.println(rightColor.b);
+    if (rightColor.r > RIGHT_RED_LOW && rightColor.y < RIGHT_YELLOW_LOW && rightColor.b < RIGHT_BLUE_LOW) {
         return COLOR_RED;
-    } else if (sum > RIGHT_BLUE_LOW && sum < RIGHT_BLUE_HIGH) {
+    } else if (rightColor.b > RIGHT_BLUE_LOW && rightColor.y < RIGHT_YELLOW_LOW) {
         return COLOR_BLUE;
-    } else if (sum > RIGHT_YELLOW_LOW && sum < RIGHT_YELLOW_HIGH) {
+    } else if (rightColor.y > RIGHT_YELLOW_LOW) {
         return COLOR_YELLOW;
     } else {
         return COLOR_BLACK;

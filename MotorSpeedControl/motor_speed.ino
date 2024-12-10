@@ -59,10 +59,12 @@ void motorspeed_setup() {
   pinMode(right_motorB, OUTPUT);
 }
 
+// Interrupt to be attached to the left motor encoder's pin
 void rotation_left() {
   left_count++;
 }
 
+// Interrupt to be attached to the right motor encoder's pin
 void rotation_right() {
   right_count++;
 }
