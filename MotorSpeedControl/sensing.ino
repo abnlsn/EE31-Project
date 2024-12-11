@@ -160,12 +160,12 @@ void sensing_startColors() {
 }
 
 SensorColor getColorLeft(int sum) {
-    Serial.print("Left Color: ");
-    Serial.print(leftColor.r);
-    Serial.print(" ");
-    Serial.print(leftColor.y);
-    Serial.print(" ");
-    Serial.println(leftColor.b);
+    // Serial.print("Left Color: ");
+    // Serial.print(leftColor.r);
+    // Serial.print(" ");
+    // Serial.print(leftColor.y);
+    // Serial.print(" ");
+    // Serial.println(leftColor.b);
     if (leftColor.r > LEFT_RED_LOW && leftColor.y < LEFT_YELLOW_LOW && leftColor.b < LEFT_BLUE_LOW) {
         return COLOR_RED;
     } else if (leftColor.b > LEFT_BLUE_LOW && leftColor.y < LEFT_YELLOW_LOW) {
@@ -178,12 +178,12 @@ SensorColor getColorLeft(int sum) {
 }
 
 SensorColor getColorRight(int sum) {
-    Serial.print("Right Color: ");
-    Serial.print(rightColor.r);
-    Serial.print(" ");
-    Serial.print(rightColor.y);
-    Serial.print(" ");
-    Serial.println(rightColor.b);
+    // Serial.print("Right Color: ");
+    // Serial.print(rightColor.r);
+    // Serial.print(" ");
+    // Serial.print(rightColor.y);
+    // Serial.print(" ");
+    // Serial.println(rightColor.b);
     if (rightColor.r > RIGHT_RED_LOW && rightColor.y < RIGHT_YELLOW_LOW && rightColor.b < RIGHT_BLUE_LOW) {
         return COLOR_RED;
     } else if (rightColor.b > RIGHT_BLUE_LOW && rightColor.y < RIGHT_YELLOW_LOW) {
@@ -199,16 +199,20 @@ SensorColor getColorRight(int sum) {
  * Read from the left color sensor
 */
 SensorColor sensing_readLeftColor() {
-    Serial.print("Left Color: ");
-    Serial.println(leftColorSum);
-    return getColorLeft(leftColorSum);
+    SensorColor left = getColorLeft(leftColorSum);
+    Serial.print("Left: ");
+    DEBUG_PRINT_COLOR(left);
+    Serial.println("");
+    return left;
 }
 
 /*
  * Read from right color sensor
 */
 SensorColor sensing_readRightColor() {
-    Serial.print("Right Color: ");
-    Serial.println(rightColorSum);
-    return getColorRight(rightColorSum);
+    SensorColor right = getColorRight(rightColorSum);
+    Serial.print("Right: ");
+    DEBUG_PRINT_COLOR(right);
+    Serial.println("");
+    return right;
 }

@@ -81,12 +81,12 @@ void motor_drive_loop() {
 
   if (difference > (THRESHOLD + offset)) {
     // slow down left
-    left_duty = 255 - difference * 2 + LEFT_DUTY_OFFSET;
+    left_duty = 255 - (difference - offset) * 4 + LEFT_DUTY_OFFSET;
     right_duty = 255 + RIGHT_DUTY_OFFSET;
     Serial.println("Slow left");
   } else if (difference < (-THRESHOLD + offset)) {
     // slow down right
-    right_duty = 255 + difference * 2 + RIGHT_DUTY_OFFSET;
+    right_duty = 255 + (difference - offset) * 4 + RIGHT_DUTY_OFFSET;
     left_duty = 255 + LEFT_DUTY_OFFSET;
     Serial.println("Slow right");
   } else {
@@ -158,8 +158,6 @@ void motorspeed_rotate(int amount) {
 }
 
 void motorspeed_loop() {
-  delay(100);
-  Serial.println(motorspeed_state);
 
   if (motorspeed_state == DRIVE) {
     motor_drive_loop();
@@ -210,18 +208,20 @@ void linefollow_loop() {
     // We are on track, both sensors are reading a color
     lineLeftCount = 0;
     lineRightCount = 0;
-  } else if (left_color == COLOR_BLACK) {
+  } else if (left_color == COLOR_BLACK && right_color != COLOR_BLACK) {
+    Serial.println("Left black");
     // We are too far left
-    lineRightCount++;
-  } else if (right_color == COLOR_BLACK) {
-    // We are too far right
     lineLeftCount++;
-  } // We are off track, rely on the previous counts to correct
+  } else if (left_color != COLOR_BLACK && right_color == COLOR_BLACK) {
+    Serial.println("Right black");
+    // We are too far right
+    lineRightCount++;
+  } // otherwise we are off track, rely on the previous counts to correct
 
   if (lineLeftCount != 0) {
-    motorspeed_set_offset(-10 * lineLeftCount);
+    motorspeed_set_offset(LINEFOLLOW_OFFSET * lineLeftCount);
   } else if (lineRightCount != 0) {
-    motorspeed_set_offset(10 * lineRightCount);
+    motorspeed_set_offset(-LINEFOLLOW_OFFSET * lineRightCount);
   } else {
     motorspeed_set_offset(0);
   }
@@ -230,6 +230,8 @@ void linefollow_loop() {
   Serial.println(lineLeftCount);
   Serial.print("Right offset: ");
   Serial.println(lineRightCount);
+
+  sensing_startColors();
 }
 
 // void follow_color(Color threshold) {

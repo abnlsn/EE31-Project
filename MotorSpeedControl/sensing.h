@@ -16,6 +16,19 @@ typedef enum {
     COLOR_BLACK,
 } SensorColor;
 
+
+#define DEBUG_PRINT_COLOR(color_enum) {\
+    if (color_enum == COLOR_RED) {\
+      Serial.print("RED");\
+    } else if (color_enum == COLOR_YELLOW) {\
+      Serial.print("YELLOW");\
+    } else if (color_enum == COLOR_BLUE) {\
+      Serial.print("BLUE");\
+    } else if (color_enum == COLOR_BLACK) {\
+      Serial.print("BLACK");\
+    }\
+}
+
 // Set up the sensing and the IR functionality
 void sensing_setup();
 int sensing_readIRValue();

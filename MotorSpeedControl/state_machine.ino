@@ -18,6 +18,7 @@ enum State {
   FIND_WALL,
   TURN_TO_RED,
   FIND_RED,
+  TURN_TO_FOLLOW_RED,
   FOLLOW_RED,
   FIND_YELLOW,
   FOLLOW_YELLOW,
@@ -48,11 +49,13 @@ void statemachine_run() {
   Serial.print("State: ");
   Serial.println(state);
 
+  String msg = wifi_getmessage();
+
   if (state == START) {
     // do nothing, relies on message from user to continue
     // state = FIND_WALL;
-    if (wifi_getmessage() == "start") {
-      state = FIND_WALL;
+    if (msg == "start") {
+      state = FOLLOW_RED;
       wifi_sendmessage("New state: FIND_WALL");
     }
 
@@ -68,7 +71,7 @@ void statemachine_run() {
       wifi_sendmessage(String(IR_value));
       wifi_sendmessage("New state: TURN_TO_RED");
       motorspeed_stop_momentarily();
-      motorspeed_rotate(DEGREES_90 * 2); // TODO: NEED TO GET CORRECT DEGREES
+      motorspeed_rotate(DEGREES_90 * 4); // TODO: NEED TO GET CORRECT DEGREES
     }
 
   } else if (state == TURN_TO_RED) {
@@ -89,16 +92,35 @@ void statemachine_run() {
     if (sensing_colorReady()) {
 
       if (sensing_readLeftColor() == COLOR_RED && sensing_readRightColor() == COLOR_RED) {
-        state = START;
-        wifi_sendmessage("New state: START");
+        state = TURN_TO_FOLLOW_RED;
+        motorspeed_stop_momentarily();
+        motorspeed_rotate(-DEGREES_90 * 2);
+        wifi_sendmessage("New state: TURN_TO_FOLLOW_RED");
       }
 
       sensing_startColors();
     }
+  
+  } else if (state == TURN_TO_FOLLOW_RED) {
+    if (!motorspeed_isrotating()) {
+      state = FOLLOW_RED;
+      wifi_sendmessage("New state: FOLLOW_RED");
+      motorspeed_stop_momentarily();
+      motorspeed_set_direction(1);
+    }
 
   } else if (state == FOLLOW_RED) {
+    motorspeed_set_direction(1);
     // follow red line
     linefollow_loop();
+
+    // if (sensing_readIRValue() > IR_THRESHOLD) {
+    //   Serial.print("IR Value: ");
+    //   Serial.println(sensing_readIRValue())
+    //   state = START;
+    //   wifi_sendmessage("New state: START");
+    //   motorspeed_set_direction(0);
+    // }
     
   } else if (state == FIND_YELLOW) {
     // stay in state until yellow is detected
@@ -123,7 +145,7 @@ void statemachine_run() {
     // stay in state until start is detected
   }
 
-  if (wifi_getmessage() == "reset") {
+  if (msg == "reset") {
     state = START;
     motorspeed_set_direction(0);
     wifi_sendmessage("Reset to: START");

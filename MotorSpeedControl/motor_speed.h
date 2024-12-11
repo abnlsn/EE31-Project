@@ -15,6 +15,9 @@
 void motorspeed_setup();
 void motorspeed_loop();
 
+// Line following
+void linefollow_loop();
+
 // Directional and rotational functions for the motor
 void motorspeed_set_direction(int new_direction);
 void motorspeed_set_offset(int new_offset);
