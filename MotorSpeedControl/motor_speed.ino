@@ -81,12 +81,12 @@ void motor_drive_loop() {
 
   if (difference > (THRESHOLD + offset)) {
     // slow down left
-    left_duty = 255 - (difference - offset) * 4 + LEFT_DUTY_OFFSET;
+    left_duty = 255 - (difference - offset) * 6 + LEFT_DUTY_OFFSET;
     right_duty = 255 + RIGHT_DUTY_OFFSET;
     Serial.println("Slow left");
   } else if (difference < (-THRESHOLD + offset)) {
     // slow down right
-    right_duty = 255 + (difference - offset) * 4 + RIGHT_DUTY_OFFSET;
+    right_duty = 255 + (difference - offset) * 6 + RIGHT_DUTY_OFFSET;
     left_duty = 255 + LEFT_DUTY_OFFSET;
     Serial.println("Slow right");
   } else {
@@ -144,14 +144,15 @@ bool rotate_done() {
 // amount > 0 => turn right
 // amount < 0 => turn left
 void motorspeed_rotate(int amount) {
-  rotate_amount = amount;
-  if (rotate_amount > 0) {
+  if (amount > 0) {
     direction_left = 1;
     direction_right = -1;
   } else {
     direction_left = -1;
     direction_right = 1;
   }
+  if (amount < 0) amount = -amount;
+  rotate_amount = amount;
   motorspeed_state = ROTATE;
   left_count = 0;
   right_count = 0;
@@ -164,7 +165,16 @@ void motorspeed_loop() {
   } else if (motorspeed_state == ROTATE) {
     motor_drive_loop();
     if (left_count > rotate_amount && right_count > rotate_amount) {
+      Serial.println("Rotate stop");
+      left_count = 0;
+      right_count = 0;
       motorspeed_state = IDLE;
+    } else if (left_count > rotate_amount) {
+      Serial.println("Left stop");
+      left_fwd(0);
+    } else if (right_count > rotate_amount) {
+      Serial.println("Right stop");
+      right_fwd(0);
     }
   }
   else if (motorspeed_state == FOLLOW_COLOR) {

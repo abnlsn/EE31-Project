@@ -8,6 +8,8 @@
 
 #include "sensing.h"
 
+#define IR_THRESHOLD 110
+
 typedef struct {
     int r;
     int y;
@@ -48,6 +50,9 @@ int rightAmbient = 0;
 int irAmbient = 0;
 int irValue = 0;
 
+SensorColor prev_leftColor = COLOR_UNSURE;
+SensorColor prev_rightColor = COLOR_UNSURE;
+
 // Define Color States
 typedef enum {
     color_IDLE,
@@ -84,7 +89,7 @@ void sensing_setup() {
     digitalWrite(IR_transistor, HIGH);
 
     delay(50);
-    analogRead(IR_read);
+    sensing_calculate_IR();
     delay(50);
 }
 
@@ -215,4 +220,31 @@ SensorColor sensing_readRightColor() {
     DEBUG_PRINT_COLOR(right);
     Serial.println("");
     return right;
+}
+
+SensorColor sensing_readRightAverage() {
+    SensorColor curr = sensing_readRightColor();
+    if (prev_rightColor == curr) {
+        prev_rightColor = curr;
+        return prev_rightColor;
+    } else {
+        prev_rightColor = curr;
+        return COLOR_UNSURE;
+    }
+}
+
+SensorColor sensing_readLeftAverage() {
+    SensorColor curr = sensing_readLeftColor();
+    if (prev_leftColor == curr) {
+        prev_leftColor = curr;
+        return prev_leftColor;
+    } else {
+        prev_leftColor = curr;
+        return COLOR_UNSURE;
+    }
+}
+
+void sensing_calculate_IR() {
+    irAmbient = analogRead(IR_read);
+    sensing_IR_th_calculated = IR_THRESHOLD + irAmbient;  
 }

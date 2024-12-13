@@ -8,12 +8,15 @@
 #ifndef SENSING_H
 #define SENSING_H
 
+int sensing_IR_th_calculated;
+
 // Color for Line Sensing
 typedef enum {
     COLOR_RED,
     COLOR_YELLOW,
     COLOR_BLUE,
     COLOR_BLACK,
+    COLOR_UNSURE
 } SensorColor;
 
 
@@ -26,6 +29,8 @@ typedef enum {
       Serial.print("BLUE");\
     } else if (color_enum == COLOR_BLACK) {\
       Serial.print("BLACK");\
+    } else {\
+      Serial.print("UNSURE");\
     }\
 }
 
@@ -37,9 +42,14 @@ int sensing_readIRValue();
 SensorColor sensing_readLeftColor();
 SensorColor sensing_readRightColor();
 
+SensorColor sensing_readRightAverage();
+SensorColor sensing_readLeftAverage();
+
 // Sensing Functions for getting and starting the sensing logic
 void sensing_loop();
 bool sensing_colorReady();
 void sensing_startColors(); 
+
+void sensing_calculate_IR();
 
 #endif
