@@ -33,11 +33,11 @@ Color rightColor = {0, 0, 0};
 // Range Values for the Color Sensor
 #define LEFT_RED_LOW 320
 #define LEFT_BLUE_LOW 280
-#define LEFT_YELLOW_LOW 180
+#define LEFT_YELLOW_LOW 160
 
 #define RIGHT_RED_LOW 115
 #define RIGHT_BLUE_LOW 500
-#define RIGHT_YELLOW_LOW 65
+#define RIGHT_YELLOW_LOW 60
 
 // Variable Definitions
 int leftColorSum = 0;
@@ -246,5 +246,7 @@ SensorColor sensing_readLeftAverage() {
 
 void sensing_calculate_IR() {
     irAmbient = analogRead(IR_read);
+    Serial.print("IR Ambient Read: ");
+    Serial.println(irAmbient);
     sensing_IR_th_calculated = IR_THRESHOLD + irAmbient;  
 }

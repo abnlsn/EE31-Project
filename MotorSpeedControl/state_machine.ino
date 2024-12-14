@@ -73,7 +73,7 @@ void statemachine_run() {
       wifi_sendmessage(String(IR_value));
       wifi_sendmessage("New state: TURN_TO_RED");
       motorspeed_stop_momentarily();
-      motorspeed_rotate(DEGREES_90 * 4); // TODO: NEED TO GET CORRECT DEGREES
+      motorspeed_rotate(LEFT_DEGREES_180); // TODO: NEED TO GET CORRECT DEGREES
     }
 
   } else if (state == TURN_TO_RED) {
@@ -103,7 +103,7 @@ void statemachine_run() {
       if (sensing_readLeftAverage() == COLOR_RED && sensing_readRightAverage() == COLOR_RED) {
         state = TURN_TO_FOLLOW_RED;
         motorspeed_stop_momentarily();
-        motorspeed_rotate(-DEGREES_90 * 2);
+        motorspeed_rotate(LEFT_DEGREES_90);
         wifi_sendmessage("New state: TURN_TO_FOLLOW_RED");
       }
 
@@ -130,7 +130,7 @@ void statemachine_run() {
       state = TURN_TO_YELLOW;
       wifi_sendmessage("New state: TURN_TO_YELLOW");
       motorspeed_stop_momentarily();
-      motorspeed_rotate(-DEGREES_90 * 3);
+      motorspeed_rotate(LEFT_DEGREES_90);
     }
     
   } else if (state == TURN_TO_YELLOW) {
@@ -148,7 +148,7 @@ void statemachine_run() {
       if (sensing_readLeftAverage() == COLOR_RED && sensing_readRightAverage() == COLOR_RED) {
         state = TURN_TO_FOLLOW_YELLOW;
         motorspeed_stop_momentarily();
-        motorspeed_rotate(-DEGREES_90);
+        motorspeed_rotate(LEFT_DEGREES_90);
         wifi_sendmessage("New state: TURN_TO_FOLLOW_YELLOW");
       }
 
@@ -174,7 +174,7 @@ void statemachine_run() {
       state = TURN_TO_START;
       wifi_sendmessage("New state: TURN_TO_START");
       motorspeed_stop_momentarily();
-      motorspeed_rotate(-DEGREES_90 * 2);
+      motorspeed_rotate(LEFT_DEGREES_90);
     }
 
   } else if (state == TURN_TO_START) {
