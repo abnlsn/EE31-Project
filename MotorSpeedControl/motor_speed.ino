@@ -36,8 +36,6 @@ const int NUM_ROTATIONS = 50;
 int lineLeftCount = 0;
 int lineRightCount = 0;
 
-int rotateCounter = 0;
-
 // State Definitions for Driving and Rotating
 typedef enum {
   IDLE,
@@ -96,6 +94,14 @@ void motor_drive_loop() {
     left_duty = 255 + LEFT_DUTY_OFFSET;
   }
 
+  if (left_duty < 0 || left_duty > 255) left_duty = 0;
+  if (right_duty < 0 || right_duty > 255) right_duty = 0;
+
+  Serial.print("Left Duty: ");
+  Serial.print(left_duty);
+  Serial.print(" Right Duty: ");
+  Serial.println(right_duty);
+
   if (direction_left < 0) {
     left_rev(left_duty);
   } else if (direction_left > 0) {
@@ -114,18 +120,38 @@ void motor_drive_loop() {
 
 }
 
+void motor_rotate_loop() {
+  if (rotate_amount > 0) { // turn right
+    left_fwd(left_duty);
+    right_rev(right_duty);
+
+  } else if (rotate_amount < 0) { // turn left
+    left_rev(left_duty);
+    right_fwd(right_duty);
+
+  } else {
+    motorspeed_state = IDLE;
+  }
+
+  if (right_count > rotate_amount) {
+    right_fwd(0);
+  }
+  if (left_count > rotate_amount) {
+    left_fwd(0);
+  }
+
+  if (right_count > rotate_amount && left_count > rotate_amount) {
+    rotate_amount = 0;
+  }
+}
 
 bool rotate_done() {
   return rotate_amount == 0;
 }
 
-int rotateDirection_left = 0;
-int rotateDirection_right = 0;
-
 // amount > 0 => turn right
 // amount < 0 => turn left
 void motorspeed_rotate(int amount) {
-  rotateCounter = 0;
   if (amount > 0) {
     direction_left = 1;
     direction_right = -1;
@@ -133,9 +159,6 @@ void motorspeed_rotate(int amount) {
     direction_left = -1;
     direction_right = 1;
   }
-  rotateDirection_left = direction_left;
-  rotateDirection_right = direction_right;
-
   if (amount < 0) amount = -amount;
   rotate_amount = amount;
   motorspeed_state = ROTATE;
@@ -148,28 +171,18 @@ void motorspeed_loop() {
   if (motorspeed_state == DRIVE) {
     motor_drive_loop();
   } else if (motorspeed_state == ROTATE) {
-    // if (rotateCounter < 5) {
-    //   direction_left = rotateDirection_left;
-    //   direction_right = rotateDirection_right;
-    // } else if (rotateCounter < 7) {
-    //   direction_left = 0;
-    //   direction_right = 0;
-    // } else {
-    //   rotateCounter = 0;
-    // }
-    // rotateCounter++;
     motor_drive_loop();
     if (left_count > rotate_amount && right_count > rotate_amount) {
       Serial.println("Rotate stop");
       left_count = 0;
       right_count = 0;
       motorspeed_state = IDLE;
-    // } else if (left_count > rotate_amount) {
-    //   Serial.println("Left stop");
-    //   left_fwd(0);
-    // } else if (right_count > rotate_amount) {
-    //   Serial.println("Right stop");
-    //   right_fwd(0);
+    } else if (left_count > rotate_amount) {
+      Serial.println("Left stop");
+      left_fwd(0);
+    } else if (right_count > rotate_amount) {
+      Serial.println("Right stop");
+      right_fwd(0);
     }
   }
   else if (motorspeed_state == FOLLOW_COLOR) {
@@ -194,8 +207,6 @@ bool motorspeed_isrotating() {
 
 // 0 = off, <0 backwards, >0 forwards
 void motorspeed_set_direction(int new_direction) {
-  left_count = 0;
-  right_count = 0;
   if (new_direction == 0) {
     motorspeed_state = IDLE;
   } else {
@@ -275,6 +286,8 @@ void right_rev(int duty) {
 *  backwards to quickly. 
 */
 void motorspeed_stop_momentarily() {
+  left_count = 0;
+  right_count = 0;
   right_fwd(0);
   left_fwd(0);
   delay(2);
