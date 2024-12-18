@@ -21,9 +21,8 @@ const int IR_transistor = A0;
 const int leftColorSensor = A1; // Pin to arduino 
 const int rightColorSensor = A2; // Pin to arduino
 
-// TODO: Define these pin numbers
 const int redLed = 7;
-const int yellowLed = 8; // TODO: yellow
+const int yellowLed = 8;
 const int blueLed = 9;
 const int irLed = 2;
 
@@ -168,6 +167,9 @@ void sensing_startColors() {
     colorState = color_READING_RED;
 }
 
+/*
+* Return the Colors for the Left Color Sensor
+*/
 SensorColor getColorLeft(int sum) {
     // wifi_sendmessage("Left Color: " + String(leftColor.r) + " " + String(leftColor.y) + " " + String(leftColor.b));
     Serial.print("Left Color: ");
@@ -187,8 +189,10 @@ SensorColor getColorLeft(int sum) {
     }
 }
 
+/*
+* Returns the Color for the Right Color
+*/
 SensorColor getColorRight(int sum) {
-    // wifi_sendmessage("Right Color: " + String(rightColor.r) + " " + String(rightColor.y) + " " + String(rightColor.b));
     Serial.print("Right Color: ");
     Serial.print(rightColor.r);
     Serial.print(" ");
@@ -229,6 +233,9 @@ SensorColor sensing_readRightColor() {
     return right;
 }
 
+/*
+* Ensure Color Sensing reads two of the same color before updating state
+*/
 SensorColor sensing_readRightAverage() {
     SensorColor curr = sensing_readRightColor();
     if (prev_rightColor == curr) {
@@ -240,6 +247,9 @@ SensorColor sensing_readRightAverage() {
     }
 }
 
+/*
+* Ensure Color Sensing reads two of the same color before updating state
+*/
 SensorColor sensing_readLeftAverage() {
     SensorColor curr = sensing_readLeftColor();
     if (prev_leftColor == curr) {
@@ -251,6 +261,9 @@ SensorColor sensing_readLeftAverage() {
     }
 }
 
+/*
+* Calculate the IR Values with Ambient Light
+*/
 void sensing_calculate_IR() {
     irAmbient = analogRead(IR_read);
     irOld = irAmbient;

@@ -5,6 +5,7 @@
 *  Variable Definitions for Motor Control, calibrates motor to ensure the bot
 *  travels in a straight line.
 */
+
 #define BATTERY_LEVEL_OFFSET 60
 #define RIGHT_DUTY_OFFSET -100
 #define LEFT_DUTY_OFFSET -110

@@ -19,8 +19,6 @@
  by Tom Igoe
  */
 
-// TODO: make this work better
-
 
 #include <SPI.h>
 #include <WiFiNINA.h>

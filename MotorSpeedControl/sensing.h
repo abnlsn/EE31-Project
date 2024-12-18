@@ -20,6 +20,7 @@ typedef enum {
 } SensorColor;
 
 
+// Print out color Values for Debugging
 #define DEBUG_PRINT_COLOR(color_enum) {\
     if (color_enum == COLOR_RED) {\
       Serial.print("RED");\

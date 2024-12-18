@@ -43,9 +43,10 @@ typedef enum {
   IDLE,
   DRIVE,
   ROTATE,
-  FOLLOW_COLOR
 } SpeedState;
 
+
+// State Variable for Motor Control
 SpeedState motorspeed_state = DRIVE;
 
 void motorspeed_setup() {
@@ -71,6 +72,7 @@ void rotation_right() {
   right_count++;
 }
 
+// Loop for keeping the motors at the same speed
 void motor_drive_loop() {
   int difference = left_count - right_count;
 
@@ -125,35 +127,6 @@ void motor_drive_loop() {
 
 }
 
-void motor_rotate_loop() {
-  if (rotate_amount > 0) { // turn right
-    left_fwd(left_duty);
-    right_rev(right_duty);
-
-  } else if (rotate_amount < 0) { // turn left
-    left_rev(left_duty);
-    right_fwd(right_duty);
-
-  } else {
-    motorspeed_state = IDLE;
-  }
-
-  if (right_count > rotate_amount) {
-    right_fwd(0);
-  }
-  if (left_count > rotate_amount) {
-    left_fwd(0);
-  }
-
-  if (right_count > rotate_amount && left_count > rotate_amount) {
-    rotate_amount = 0;
-  }
-}
-
-bool rotate_done() {
-  return rotate_amount == 0;
-}
-
 // amount > 0 => turn right
 // amount < 0 => turn left
 void motorspeed_rotate(int amount) {
@@ -172,11 +145,15 @@ void motorspeed_rotate(int amount) {
   right_count = 0;
 }
 
+// Main loop for the motor control
+// Handles the state for rotating or driving straight
 void motorspeed_loop() {
 
   if (motorspeed_state == DRIVE) {
     motor_drive_loop();
   } else if (motorspeed_state == ROTATE) {
+    // move motors in opposite directions,
+    // return to IDLE state once rotated desired amount
     motor_drive_loop();
     if (left_count > rotate_amount && right_count > rotate_amount) {
       Serial.println("Rotate stop");
@@ -190,10 +167,6 @@ void motorspeed_loop() {
       Serial.println("Right stop");
       right_fwd(0);
     }
-  }
-  else if (motorspeed_state == FOLLOW_COLOR) {
-    // linefollow_loop();
-    motor_drive_loop();
   } else {
     // IDLE
     right_fwd(0);
@@ -259,39 +232,34 @@ void linefollow_loop() {
   sensing_startColors();
 }
 
-// void follow_color(Color threshold) {
-//   colorThreshold = threshold;
-//   motorspeed_state = FOLLOW_COLOR; 
-// }
-
+// Move left wheel forward
 void left_fwd(int duty) {
   digitalWrite(left_motorB, LOW);
   analogWrite(left_motorA, duty);
 }
 
+// Move left wheel backwards
 void left_rev(int duty) {
   digitalWrite(left_motorA, LOW);
   analogWrite(left_motorB, duty);
 
 }
 
+// Move right wheel forward
 void right_fwd(int duty) {
   digitalWrite(right_motorB, LOW);
   analogWrite(right_motorA, duty);
 
 }
 
+// Move right wheel backwards
 void right_rev(int duty) {
   digitalWrite(right_motorA, LOW);
   analogWrite(right_motorB, duty);
 
 }
 
-/* 
-*  TODO: use this within the implementation above
-*  Function to keep the motors from getting damaged from moving forward then 
-*  backwards to quickly. 
-*/
+// Stop the motor, used for changing motor direction
 void motorspeed_stop_momentarily() {
   left_count = 0;
   right_count = 0;
