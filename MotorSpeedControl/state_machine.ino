@@ -18,12 +18,10 @@ enum State {
   TURN_TO_RED,
   FIND_RED,
   TURN_TO_FOLLOW_RED,
-  WAIT_FOR_OTHER_BOT,
   FOLLOW_RED,
   TURN_TO_YELLOW,
   FIND_YELLOW,
   TURN_TO_FOLLOW_YELLOW,
-  WAIT_FOR_OTHER_BOT_YELLOW,
   FOLLOW_YELLOW,
   TURN_TO_START,
   FIND_START,
@@ -78,7 +76,7 @@ void statemachine_run() {
       wifi_sendmessage(String(IR_value));
       wifi_sendmessage("New state: TURN_TO_RED");
       motorspeed_stop_momentarily();
-      motorspeed_rotate(DEGREES_180); // TODO: NEED TO GET CORRECT DEGREES
+      motorspeed_rotate(-DEGREES_180); // TODO: NEED TO GET CORRECT DEGREES
     }
 
   } else if (state == TURN_TO_RED) {
@@ -105,10 +103,10 @@ void statemachine_run() {
       DEBUG_PRINT_COLOR(right);
       Serial.println();
 
-      if (sensing_readLeftAverage() == COLOR_RED && sensing_readRightAverage() == COLOR_RED) {
+      if (sensing_readLeftAverage() == COLOR_BLUE && sensing_readRightAverage() == COLOR_BLUE) {
         state = TURN_TO_FOLLOW_RED;
         motorspeed_stop_momentarily();
-        motorspeed_rotate(-175); // 80°
+        motorspeed_rotate(195); // 80°
         wifi_sendmessage("New state: TURN_TO_FOLLOW_RED");
       }
 
@@ -117,22 +115,11 @@ void statemachine_run() {
   
   } else if (state == TURN_TO_FOLLOW_RED) {
     if (!motorspeed_isrotating()) {
-      state = WAIT_FOR_OTHER_BOT;
+      state = FOLLOW_RED;
       wifi_sendmessage("New state: FOLLOW_RED");
       motorspeed_stop_momentarily();
       motorspeed_set_direction(1);
     }
-
-  } else if (state == WAIT_FOR_OTHER_BOT) {
-    // stay in state until message is received from other bot
-    // if (other_msg == "blue lane found") {
-    //   state = TURN_TO_YELLOW;
-    //   wifi_sendmessage("New state: TURN_TO_YELLOW");
-    //   motorspeed_stop_momentarily();
-    //   motorspeed_rotate(-DEGREES_90);
-    // }
-    wifi_sendmessage("red lane found");
-    state = FOLLOW_RED;
 
   } else if (state == FOLLOW_RED) {
     motorspeed_set_direction(1);
@@ -146,7 +133,7 @@ void statemachine_run() {
       state = TURN_TO_YELLOW;
       wifi_sendmessage("New state: TURN_TO_YELLOW");
       motorspeed_stop_momentarily();
-      motorspeed_rotate(-DEGREES_90);
+      motorspeed_rotate(DEGREES_90);
     }
     
   } else if (state == TURN_TO_YELLOW) {
@@ -164,7 +151,7 @@ void statemachine_run() {
       if (sensing_readLeftAverage() == COLOR_YELLOW && sensing_readRightAverage() == COLOR_YELLOW) {
         state = TURN_TO_FOLLOW_YELLOW;
         motorspeed_stop_momentarily();
-        motorspeed_rotate(-175); // 70°
+        motorspeed_rotate(175); // 70°
         wifi_sendmessage("New state: TURN_TO_FOLLOW_YELLOW");
       }
 
@@ -173,16 +160,9 @@ void statemachine_run() {
 
   } else if (state == TURN_TO_FOLLOW_YELLOW) {
     if (!motorspeed_isrotating()) {
-      state = WAIT_FOR_OTHER_BOT_YELLOW;
+      state = FOLLOW_YELLOW;
       wifi_sendmessage("New state: FOLLOW_YELLOW");
       motorspeed_stop_momentarily();
-    }
-  } else if (state == WAIT_FOR_OTHER_BOT_YELLOW) {
-    if (other_msg == "blue lane found") {
-      state = FOLLOW_YELLOW;
-      wifi_sendmessage("New state: TURN_TO_START");
-      motorspeed_stop_momentarily();
-      motorspeed_rotate(-DEGREES_90);
     }
   } else if (state == FOLLOW_YELLOW) {
     motorspeed_set_direction(1);
@@ -196,7 +176,7 @@ void statemachine_run() {
       state = TURN_TO_START;
       wifi_sendmessage("New state: TURN_TO_START");
       motorspeed_stop_momentarily();
-      motorspeed_rotate(-DEGREES_90);
+      motorspeed_rotate(DEGREES_90);
     }
 
   } else if (state == TURN_TO_START) {

@@ -32,7 +32,7 @@ Color rightColor = {0, 0, 0};
 
 // Range Values for the Color Sensor
 #define LEFT_RED_LOW 140
-#define LEFT_BLUE_LOW 280 
+#define LEFT_BLUE_LOW 200
 #define LEFT_YELLOW_LOW 130
 
 #define RIGHT_RED_LOW 85
