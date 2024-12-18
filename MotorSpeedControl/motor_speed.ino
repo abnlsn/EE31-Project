@@ -17,7 +17,7 @@ const int right_motor_encoder = 13;
 const int left_motorA = 5;
 const int left_motorB = 6;
 const int right_motorA = 10;
-const int right_motorB = 11;
+const int right_motorB = 3;
 
 // Motor Speed Control Variables
 int left_count = 0;
@@ -35,6 +35,8 @@ const int NUM_ROTATIONS = 50;
 
 int lineLeftCount = 0;
 int lineRightCount = 0;
+
+int batteryOffset = BATTERY_LEVEL_OFFSET;
 
 // State Definitions for Driving and Rotating
 typedef enum {
@@ -72,6 +74,9 @@ void rotation_right() {
 void motor_drive_loop() {
   int difference = left_count - right_count;
 
+  int left_calculated = LEFT_DUTY_OFFSET - batteryOffset;
+  int right_calculated = RIGHT_DUTY_OFFSET - batteryOffset;
+
   Serial.print("Encoders: ");
   Serial.print(difference);
   Serial.print(" ");
@@ -81,17 +86,17 @@ void motor_drive_loop() {
 
   if (difference > (THRESHOLD + offset)) {
     // slow down left
-    left_duty = 255 - (difference - offset) * 6 + LEFT_DUTY_OFFSET;
-    right_duty = 255 + RIGHT_DUTY_OFFSET;
+    left_duty = 255 - (difference - offset) * 3 + left_calculated;
+    right_duty = 255 + right_calculated;
     Serial.println("Slow left");
   } else if (difference < (-THRESHOLD + offset)) {
     // slow down right
-    right_duty = 255 + (difference - offset) * 6 + RIGHT_DUTY_OFFSET;
-    left_duty = 255 + LEFT_DUTY_OFFSET;
+    right_duty = 255 + (difference - offset) * 3 + right_calculated;
+    left_duty = 255 + left_calculated;
     Serial.println("Slow right");
   } else {
-    right_duty = 255 + RIGHT_DUTY_OFFSET;
-    left_duty = 255 + LEFT_DUTY_OFFSET;
+    right_duty = 255 + right_calculated;
+    left_duty = 255 + left_calculated;
   }
 
   if (left_duty < 0 || left_duty > 255) left_duty = 0;
@@ -152,6 +157,7 @@ bool rotate_done() {
 // amount > 0 => turn right
 // amount < 0 => turn left
 void motorspeed_rotate(int amount) {
+  batteryOffset = 50;
   if (amount > 0) {
     direction_left = 1;
     direction_right = -1;
@@ -207,6 +213,7 @@ bool motorspeed_isrotating() {
 
 // 0 = off, <0 backwards, >0 forwards
 void motorspeed_set_direction(int new_direction) {
+  batteryOffset = BATTERY_LEVEL_OFFSET;
   if (new_direction == 0) {
     motorspeed_state = IDLE;
   } else {

@@ -8,7 +8,7 @@
 
 #include "sensing.h"
 
-#define IR_THRESHOLD 110
+#define IR_THRESHOLD 165
 
 typedef struct {
     int r;
@@ -31,13 +31,13 @@ Color leftColor = {0, 0, 0};
 Color rightColor = {0, 0, 0};
 
 // Range Values for the Color Sensor
-#define LEFT_RED_LOW 320
-#define LEFT_BLUE_LOW 280
-#define LEFT_YELLOW_LOW 160
+#define LEFT_RED_LOW 140
+#define LEFT_BLUE_LOW 280 
+#define LEFT_YELLOW_LOW 130
 
-#define RIGHT_RED_LOW 115
+#define RIGHT_RED_LOW 85
 #define RIGHT_BLUE_LOW 500
-#define RIGHT_YELLOW_LOW 60
+#define RIGHT_YELLOW_LOW 50
 
 // Variable Definitions
 int leftColorSum = 0;
@@ -49,9 +49,12 @@ int rightAmbient = 0;
 
 int irAmbient = 0;
 int irValue = 0;
+int irOld = 0;
 
 SensorColor prev_leftColor = COLOR_UNSURE;
 SensorColor prev_rightColor = COLOR_UNSURE;
+SensorColor prev2_leftColor = COLOR_UNSURE;
+SensorColor prev2_rightColor = COLOR_UNSURE;
 
 // Define Color States
 typedef enum {
@@ -99,6 +102,7 @@ void sensing_setup() {
 */
 void sensing_loop() {
 
+    irOld = irValue;
     irValue = analogRead(IR_read);
 
     if (colorState == color_IDLE) {
@@ -146,7 +150,7 @@ void sensing_loop() {
 * Function to read the IR value for the wall
 */
 int sensing_readIRValue() {
-    return irValue;
+    return (irValue + irOld) / 2;
     // return 0;
 }
 
@@ -165,12 +169,13 @@ void sensing_startColors() {
 }
 
 SensorColor getColorLeft(int sum) {
-    // Serial.print("Left Color: ");
-    // Serial.print(leftColor.r);
-    // Serial.print(" ");
-    // Serial.print(leftColor.y);
-    // Serial.print(" ");
-    // Serial.println(leftColor.b);
+    // wifi_sendmessage("Left Color: " + String(leftColor.r) + " " + String(leftColor.y) + " " + String(leftColor.b));
+    Serial.print("Left Color: ");
+    Serial.print(leftColor.r);
+    Serial.print(" ");
+    Serial.print(leftColor.y);
+    Serial.print(" ");
+    Serial.println(leftColor.b);
     if (leftColor.r > LEFT_RED_LOW && leftColor.y < LEFT_YELLOW_LOW && leftColor.b < LEFT_BLUE_LOW) {
         return COLOR_RED;
     } else if (leftColor.b > LEFT_BLUE_LOW && leftColor.y < LEFT_YELLOW_LOW) {
@@ -183,12 +188,13 @@ SensorColor getColorLeft(int sum) {
 }
 
 SensorColor getColorRight(int sum) {
-    // Serial.print("Right Color: ");
-    // Serial.print(rightColor.r);
-    // Serial.print(" ");
-    // Serial.print(rightColor.y);
-    // Serial.print(" ");
-    // Serial.println(rightColor.b);
+    // wifi_sendmessage("Right Color: " + String(rightColor.r) + " " + String(rightColor.y) + " " + String(rightColor.b));
+    Serial.print("Right Color: ");
+    Serial.print(rightColor.r);
+    Serial.print(" ");
+    Serial.print(rightColor.y);
+    Serial.print(" ");
+    Serial.println(rightColor.b);
     if (rightColor.r > RIGHT_RED_LOW && rightColor.y < RIGHT_YELLOW_LOW && rightColor.b < RIGHT_BLUE_LOW) {
         return COLOR_RED;
     } else if (rightColor.b > RIGHT_BLUE_LOW && rightColor.y < RIGHT_YELLOW_LOW) {
@@ -204,6 +210,7 @@ SensorColor getColorRight(int sum) {
  * Read from the left color sensor
 */
 SensorColor sensing_readLeftColor() {
+    Serial.print("Left: ");
     SensorColor left = getColorLeft(leftColorSum);
     Serial.print("Left: ");
     DEBUG_PRINT_COLOR(left);
@@ -246,6 +253,7 @@ SensorColor sensing_readLeftAverage() {
 
 void sensing_calculate_IR() {
     irAmbient = analogRead(IR_read);
+    irOld = irAmbient;
     Serial.print("IR Ambient Read: ");
     Serial.println(irAmbient);
     sensing_IR_th_calculated = IR_THRESHOLD + irAmbient;  

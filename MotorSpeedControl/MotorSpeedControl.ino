@@ -3,10 +3,6 @@
 #include "state_machine.h"
 #include "wifi_client.h"
 
-#ifndef MOTOR_SPEED_H
-#define MOTOR_SPEED_H
-
-
 void setup() {
   Serial.begin(9600);
   motorspeed_setup();
@@ -25,5 +21,3 @@ void loop() {
 
   delay(50);
 }
-
-#endif

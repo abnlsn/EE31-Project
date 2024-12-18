@@ -93,7 +93,7 @@ void wifi_setup() {
   client.endMessage();
 }
 
-String line_getvar(String body) {
+String line_getvar(String body, String id) {
   int state = 0; // 0 = reading variable name, 1 = reading variable value
 
   String current_varname;
@@ -105,7 +105,9 @@ String line_getvar(String body) {
       if (body[i] != '.') {
         current_varname.concat(body[i]);
       } else {
-        if (current_varname != WEB_UUID) {
+        Serial.print("Varname: ");
+        Serial.println(current_varname);
+        if (!current_varname.startsWith(id)) {
           return "";
         }
         state = 1;
@@ -132,7 +134,24 @@ String wifi_getmessage() {
     if (messageSize > 0) {
       Serial.println("Received a message:");
       String response = client.readString();
-      String msg = line_getvar(response);
+      String msg = line_getvar(response, WEB_UUID);
+      Serial.println(response);
+      return msg;
+    }
+  } else {
+    Serial.println("Disconnected from server");
+  }
+  return "";
+}
+
+String wifi_get_partner_message() {
+  if (client.connected()) {
+    // check if a message is available to be received
+    int messageSize = client.parseMessage();
+    if (messageSize > 0) {
+      Serial.println("Received a message:");
+      String response = client.readString();
+      String msg = line_getvar(response, OTHERTEAM_UUID);
       Serial.println(response);
       return msg;
     }
